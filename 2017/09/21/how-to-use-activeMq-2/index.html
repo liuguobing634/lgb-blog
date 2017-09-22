@@ -3,18 +3,20 @@
 <head>
   <meta charset="utf-8">
   
-  <title>刘国兵的博客</title>
+  <title>使用activeMq(二) | 刘国兵的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="好记性不如烂笔头">
-<meta property="og:type" content="website">
-<meta property="og:title" content="刘国兵的博客">
-<meta property="og:url" content="http://liuguobing634.github.io/lgb-blog/index.html">
+  <meta name="description" content="activeMq 结合 springspring已差不多成为java项目的标配了，它的核心两大功能aop与ioc让它变得像一个万用插头，什么都能够搭配起来，jms当然不在话下。 本文将讲解spring与jms的结合，而此jms产品自然选择的是activeMq。 spring与jms结合有几个步骤，习惯了spring用annotation方式，所以我这里也是如此，没有使用xml配置文件。 首先，写配">
+<meta name="keywords" content="spring&#x2F;activeMq&#x2F;jms">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用activeMq(二)">
+<meta property="og:url" content="http://liuguobing634.github.io/lgb-blog/2017/09/21/how-to-use-activeMq-2/index.html">
 <meta property="og:site_name" content="刘国兵的博客">
-<meta property="og:description" content="好记性不如烂笔头">
+<meta property="og:description" content="activeMq 结合 springspring已差不多成为java项目的标配了，它的核心两大功能aop与ioc让它变得像一个万用插头，什么都能够搭配起来，jms当然不在话下。 本文将讲解spring与jms的结合，而此jms产品自然选择的是activeMq。 spring与jms结合有几个步骤，习惯了spring用annotation方式，所以我这里也是如此，没有使用xml配置文件。 首先，写配">
 <meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2017-09-22T12:00:02.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="刘国兵的博客">
-<meta name="twitter:description" content="好记性不如烂笔头">
+<meta name="twitter:title" content="使用activeMq(二)">
+<meta name="twitter:description" content="activeMq 结合 springspring已差不多成为java项目的标配了，它的核心两大功能aop与ioc让它变得像一个万用插头，什么都能够搭配起来，jms当然不在话下。 本文将讲解spring与jms的结合，而此jms产品自然选择的是activeMq。 spring与jms结合有几个步骤，习惯了spring用annotation方式，所以我这里也是如此，没有使用xml配置文件。 首先，写配">
   
     <link rel="alternate" href="/atom.xml" title="刘国兵的博客" type="application/atom+xml">
   
@@ -67,61 +69,7 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main">
-  
-    <article id="post-how-to-use-activeMq-1" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/lgb-blog/2017/09/21/how-to-use-activeMq-1/" class="article-date">
-  <time datetime="2017-09-21T11:54:07.000Z" itemprop="datePublished">2017-09-21</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/lgb-blog/2017/09/21/how-to-use-activeMq-1/">使用activeMq(一)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>现在越来越多的项目需要分模块开发，然后模块之间的调用就需要消息中间件，作为老牌的，也是最全面的消息中间件，activeMq是我下一个要攻克的产品，所以得空抽点时间去学习他。</p>
-<h3 id="一、安装activeMq"><a href="#一、安装activeMq" class="headerlink" title="一、安装activeMq"></a>一、安装activeMq</h3><p>官网上下载，由于我用的macbook， 所以安装的是tar包，解压后，进入bin目录，然后输入以下命令：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ ./activemq start</div></pre></td></tr></table></figure>
-<p>后台启动activemq，这就安装好了</p>
-<h3 id="二、使用activemq"><a href="#二、使用activemq" class="headerlink" title="二、使用activemq"></a>二、使用activemq</h3><p>activemq是服从AMQP协议的，这也让它能够使用多种语言开发，因为我本人是java developer,所以我采用的是java。</p>
-<p>然后activemq支持两类消息，一种是点对点(p2p)，一种是发布订阅模式(pub/sub)，实际上activemq也服从jms协议，所以这个其实是jms的内容。</p>
-<p>以下是采用p2p的代码</p>
-<h4 id="生产者"><a href="#生产者" class="headerlink" title="生产者"></a>生产者</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Producer</span> </span>&#123;</div><div class="line"> </div><div class="line">     <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String USERNAME = ActiveMQConnection.DEFAULT_USER;</div><div class="line"> </div><div class="line">     <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String PASSWORD = ActiveMQConnection.DEFAULT_PASSWORD;</div><div class="line"> </div><div class="line">     <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String BROKEN_URL = ActiveMQConnection.DEFAULT_BROKER_URL;</div><div class="line"> </div><div class="line">     AtomicInteger count = <span class="keyword">new</span> AtomicInteger(<span class="number">0</span>);</div><div class="line"> </div><div class="line">     <span class="comment">//链接工厂</span></div><div class="line">     ConnectionFactory connectionFactory;</div><div class="line">     <span class="comment">//链接对象</span></div><div class="line">     Connection connection;</div><div class="line">     <span class="comment">//事务管理</span></div><div class="line">     Session session;</div><div class="line">     ThreadLocal&lt;MessageProducer&gt; threadLocal = <span class="keyword">new</span> ThreadLocal&lt;&gt;();</div><div class="line"> </div><div class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</div><div class="line">         <span class="keyword">try</span> &#123;</div><div class="line">             connectionFactory = <span class="keyword">new</span> ActiveMQConnectionFactory(USERNAME, PASSWORD, BROKEN_URL);</div><div class="line">             connection = connectionFactory.createConnection();</div><div class="line">             connection.start();</div><div class="line">             session = connection.createSession(<span class="keyword">true</span>, Session.SESSION_TRANSACTED);</div><div class="line">         &#125; <span class="keyword">catch</span> (JMSException e) &#123;</div><div class="line">             e.printStackTrace();</div><div class="line">         &#125;</div><div class="line">     &#125;</div><div class="line"> </div><div class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendMessage</span><span class="params">(String disname)</span> </span>&#123;</div><div class="line">         <span class="keyword">try</span> &#123;</div><div class="line"> <span class="comment">//            Queue queue = session.createQueue(disname);</span></div><div class="line">             Destination destination = session.createQueue(disname); <span class="comment">// 1</span></div><div class="line">             MessageProducer producer = <span class="keyword">null</span>;</div><div class="line">             <span class="keyword">if</span> (threadLocal.get() != <span class="keyword">null</span>) &#123;</div><div class="line">                 producer = threadLocal.get();</div><div class="line">             &#125; <span class="keyword">else</span> &#123;</div><div class="line">                 producer = session.createProducer(destination);</div><div class="line">                 threadLocal.set(producer);</div><div class="line">             &#125;</div><div class="line">             <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</div><div class="line">                 Thread.sleep(<span class="number">1000</span>);</div><div class="line">                 <span class="keyword">int</span> num = count.getAndIncrement();</div><div class="line">                 <span class="comment">// 发送TextMessage</span></div><div class="line">                 String msg = Thread.currentThread().getName()+</div><div class="line">                         <span class="string">"producer:我是大帅哥，我现在正在生产东西！,count:"</span>+num;</div><div class="line">                 TextMessage message = session.createTextMessage(msg);</div><div class="line">                 System.out.println(msg);</div><div class="line">                 producer.send(message);</div><div class="line">                 <span class="comment">// 提交session</span></div><div class="line">                 session.commit();</div><div class="line">             &#125;</div><div class="line">         &#125; <span class="keyword">catch</span> (JMSException | InterruptedException e) &#123;</div><div class="line">             e.printStackTrace();</div><div class="line">         &#125;</div><div class="line">     &#125;</div><div class="line"> </div><div class="line"> &#125;</div></pre></td></tr></table></figure>
-<p>生产者完成，除了用到了new ActiveMQConnectorFactory，其余的都是jms的标准写法，其实消费者也是如此。</p>
-<h4 id="消费者"><a href="#消费者" class="headerlink" title="消费者"></a>消费者</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Consumer</span> </span>&#123;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String USERNAME = ActiveMQConnection.DEFAULT_USER;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String PASSWORD = ActiveMQConnection.DEFAULT_PASSWORD;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String BROKEN_URL = ActiveMQConnection.DEFAULT_BROKER_URL;</div><div class="line"></div><div class="line">    AtomicInteger count = <span class="keyword">new</span> AtomicInteger();</div><div class="line"></div><div class="line">    <span class="comment">//链接工厂</span></div><div class="line">    ConnectionFactory connectionFactory;</div><div class="line">    <span class="comment">//链接对象</span></div><div class="line">    Connection connection;</div><div class="line">    <span class="comment">//事务管理</span></div><div class="line">    Session session;</div><div class="line"></div><div class="line">    ThreadLocal&lt;MessageConsumer&gt; threadLocal = <span class="keyword">new</span> ThreadLocal&lt;&gt;();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="comment">// 这是点对点还是sub/pub</span></div><div class="line">            connectionFactory = <span class="keyword">new</span> ActiveMQConnectionFactory(USERNAME, PASSWORD, BROKEN_URL);</div><div class="line">            connection = connectionFactory.createConnection();</div><div class="line">            connection.start();</div><div class="line">            session = connection.createSession(<span class="keyword">true</span>, Session.AUTO_ACKNOWLEDGE);</div><div class="line">        &#125; <span class="keyword">catch</span> (JMSException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getMessage</span><span class="params">(String disname)</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="comment">// 如果是创建queue，则是点对点，而如果是创建topic，则是sub/pub</span></div><div class="line"><span class="comment">//            Queue queue = session.createQueue(disname);</span></div><div class="line">            Destination destination = session.createQueue(disname); <span class="comment">// 2</span></div><div class="line">            MessageConsumer consumer = <span class="keyword">null</span>;</div><div class="line">            <span class="keyword">if</span> (threadLocal.get() != <span class="keyword">null</span>) &#123;</div><div class="line">                consumer = threadLocal.get();</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                consumer = session.createConsumer(destination);</div><div class="line">                threadLocal.set(consumer);</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</div><div class="line">                Thread.sleep(<span class="number">1000</span>);</div><div class="line">                TextMessage message = (TextMessage) consumer.receive();</div><div class="line">                <span class="keyword">if</span> (message != <span class="keyword">null</span>) &#123;</div><div class="line">                    message.acknowledge();</div><div class="line">                    System.out.println(Thread.currentThread().getName()+<span class="string">": Consumer:我是消费者，我正在消费Msg"</span>+message.getText()+<span class="string">"---&gt;"</span>+count.getAndIncrement());</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">catch</span> (JMSException | InterruptedException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h4 id="测试用例"><a href="#测试用例" class="headerlink" title="测试用例"></a>测试用例</h4><h5 id="生产者-1"><a href="#生产者-1" class="headerlink" title="生产者"></a>生产者</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProducerTest</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        Producer producer = <span class="keyword">new</span> Producer();</div><div class="line">        producer.init();</div><div class="line">        producer.sendMessage(<span class="string">"test"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h5 id="消费者-1"><a href="#消费者-1" class="headerlink" title="消费者"></a>消费者</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConsumerTest</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        Consumer consumer = <span class="keyword">new</span> Consumer();</div><div class="line">        consumer.init();</div><div class="line">        consumer.getMessage(<span class="string">"test"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>所有代码就完成了。<br>activeMq有一个监听的页面，打开 (<a href="http://localhost:8161" target="_blank" rel="external">http://localhost:8161</a>) 可以看到，用户名密码都是admin，点击queue大家可以看到上面有个表格。</p>
-<h4 id="发布订阅模式"><a href="#发布订阅模式" class="headerlink" title="发布订阅模式"></a>发布订阅模式</h4><p>实际上把上面的1跟2换成如下代码就可以变成发布订阅模式了:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Destination destination = session.createTopic(disname);</div></pre></td></tr></table></figure>
-<h3 id="三、总结"><a href="#三、总结" class="headerlink" title="三、总结"></a>三、总结</h3><p>activemq的简单使用还是很简单的，在项目应用中也很容易找到它们的作用点，这里我就不再详述。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/21/how-to-use-activeMq-1/" data-id="cj7vu3q5c0000t4ic5bziz495" class="article-share-link">Partager</a>
-      
-      
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-how-to-use-activeMq-2" class="article article-type-post" itemscope itemprop="blogPost">
+        <section id="main"><article id="post-how-to-use-activeMq-2" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/lgb-blog/2017/09/21/how-to-use-activeMq-2/" class="article-date">
   <time datetime="2017-09-21T11:54:07.000Z" itemprop="datePublished">2017-09-21</time>
@@ -134,8 +82,8 @@
       <header class="article-header">
         
   
-    <h1 itemprop="name">
-      <a class="article-title" href="/lgb-blog/2017/09/21/how-to-use-activeMq-2/">使用activeMq(二)</a>
+    <h1 class="article-title" itemprop="name">
+      使用activeMq(二)
     </h1>
   
 
@@ -178,10 +126,23 @@
     </footer>
   </div>
   
-</article>
-
+    
+<nav id="article-nav">
+  
+    <a href="/lgb-blog/2017/09/21/how-to-use-activeMq-1/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Récent</strong>
+      <div class="article-nav-title">
+        
+          使用activeMq(一)
+        
+      </div>
+    </a>
+  
+  
+</nav>
 
   
+</article>
 
 </section>
         
