@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>使用activeMq(三) | 刘国兵的博客</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="JMS消息持久化与事务机制本文有两部分，一部分讲述jms的消息持久化，另一部分讲解事务机制。 1.JMS持久化JMS持久化其实有两类，一类是传输持久化，一类是订阅持久化，其实不难理解，前者是应对服务器broker的，后者是应对消息订阅者的。 首先来看传输持久化与非持久化。 1.1 JMS传输的持久化与非持久化消息传输非持久化是指发送消息时直接将消息发送到订阅者那里，而不需要保存下来，持久化则先保存">
+<meta name="keywords" content="activeMq,jms">
+<meta property="og:type" content="article">
+<meta property="og:title" content="使用activeMq(三)">
+<meta property="og:url" content="http://liuguobing634.github.io/lgb-blog/2017/09/22/how-to-use-activeMq-3/index.html">
+<meta property="og:site_name" content="刘国兵的博客">
+<meta property="og:description" content="JMS消息持久化与事务机制本文有两部分，一部分讲述jms的消息持久化，另一部分讲解事务机制。 1.JMS持久化JMS持久化其实有两类，一类是传输持久化，一类是订阅持久化，其实不难理解，前者是应对服务器broker的，后者是应对消息订阅者的。 首先来看传输持久化与非持久化。 1.1 JMS传输的持久化与非持久化消息传输非持久化是指发送消息时直接将消息发送到订阅者那里，而不需要保存下来，持久化则先保存">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2017-09-23T09:14:47.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="使用activeMq(三)">
+<meta name="twitter:description" content="JMS消息持久化与事务机制本文有两部分，一部分讲述jms的消息持久化，另一部分讲解事务机制。 1.JMS持久化JMS持久化其实有两类，一类是传输持久化，一类是订阅持久化，其实不难理解，前者是应对服务器broker的，后者是应对消息订阅者的。 首先来看传输持久化与非持久化。 1.1 JMS传输的持久化与非持久化消息传输非持久化是指发送消息时直接将消息发送到订阅者那里，而不需要保存下来，持久化则先保存">
+  
+    <link rel="alternate" href="/atom.xml" title="刘国兵的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/lgb-blog/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/lgb-blog/" id="logo">刘国兵的博客</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/lgb-blog/" id="subtitle">技术无止境</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/lgb-blog/">Home</a>
+        
+          <a class="main-nav-link" href="/lgb-blog/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liuguobing634.github.io/lgb-blog"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-how-to-use-activeMq-3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lgb-blog/2017/09/22/how-to-use-activeMq-3/" class="article-date">
+  <time datetime="2017-09-22T06:56:00.000Z" itemprop="datePublished">2017-09-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      使用activeMq(三)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="JMS消息持久化与事务机制"><a href="#JMS消息持久化与事务机制" class="headerlink" title="JMS消息持久化与事务机制"></a>JMS消息持久化与事务机制</h2><p>本文有两部分，一部分讲述jms的消息持久化，另一部分讲解事务机制。</p>
+<h3 id="1-JMS持久化"><a href="#1-JMS持久化" class="headerlink" title="1.JMS持久化"></a>1.JMS持久化</h3><p>JMS持久化其实有两类，一类是传输持久化，一类是订阅持久化，其实不难理解，前者是应对服务器broker的，后者是应对消息订阅者的。</p>
+<p>首先来看传输持久化与非持久化。</p>
+<h4 id="1-1-JMS传输的持久化与非持久化"><a href="#1-1-JMS传输的持久化与非持久化" class="headerlink" title="1.1 JMS传输的持久化与非持久化"></a>1.1 JMS传输的持久化与非持久化</h4><p>消息传输非持久化是指发送消息时直接将消息发送到订阅者那里，而不需要保存下来，持久化则先保存下来然后再发送到订阅者。当broker宕机重启时，会将持久化未发送的消息重新发送到订阅者那，而未持久化的消息则无法传送了。</p>
+<p>在producer中设置DeliverMode时配置此选项，默认是持久化传输的(activemq测试是如此，其余的消息队列不清楚)。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">producer = session.createProducer(destination);</div><div class="line">producer.setDeliveryMode(DeliveryMode.PERSISTENT); // 持久化</div><div class="line">// producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT); // 非持久化</div></pre></td></tr></table></figure>
+<p>大家可以测试一下，在activemq重启后，持久化的会继续收到，而非持久化的则无法收到</p>
+<h4 id="1-2-JMS订阅的持久化与非持久化"><a href="#1-2-JMS订阅的持久化与非持久化" class="headerlink" title="1.2 JMS订阅的持久化与非持久化"></a>1.2 JMS订阅的持久化与非持久化</h4><p>首先，这个只针对pub/sub方式，p2p与此无关，因为p2p是消费了就删除，没消费就留着，所以本身不需要持久化订阅。</p>
+<p>pub/sub模式因为一个主题可以被多个订阅者订阅，某些订阅者也可能因为中途宕机而错过消息，而消息队列不可能因为其中一两个订阅者的消失后重现而重新发送消息给所有订阅者，所以针对此情况，就需要把这些订阅者的相关信息保存起来。</p>
+<p>这个操作因为与生产者无关，所以只在消费者那里有变化.</p>
+<p>首先消息队列要识别订阅者和订阅的消息，所以有两处改变，首先是要给订阅者的connection设置一个clientId。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">connection.setClientID(&quot;consumers-&quot;+Thread.currentThread().getName());</div></pre></td></tr></table></figure>
+<p>注意这里的id只能唯一，第二个同样的id加进来则报错。</p>
+<p>其次持久化订阅的consumer也要与非持久化区分</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">consumer = session.createDurableSubscriber((Topic) destination, &quot;aaa&quot;); // 持久化订阅</div><div class="line">// consumer = session.createConsumer(destination); //非持久化订阅</div></pre></td></tr></table></figure>
+<p>当使用持久化订阅时，如果生产者持续生成消息，而订阅者中途离开又回来，那么中间错过的消息可以补偿得到。</p>
+<p>我写了给代码做了测试.</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConsumerTest</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line"></div><div class="line">        Consumer consumer1 = <span class="keyword">new</span> Consumer();</div><div class="line">        Consumer consumer2 = <span class="keyword">new</span> Consumer();</div><div class="line">        Consumer consumer3 = <span class="keyword">new</span> Consumer();</div><div class="line"></div><div class="line">        Thread thread = <span class="keyword">new</span> Thread(<span class="keyword">new</span> ConsumerRun(consumer1),<span class="string">"thread1"</span>);</div><div class="line">        thread.start();</div><div class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> ConsumerRun(consumer2)).start();</div><div class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> ConsumerRun(consumer3)).start();</div><div class="line"></div><div class="line">        Thread.sleep(<span class="number">30000</span>);</div><div class="line">        System.out.println(<span class="string">"客户端1关闭"</span>);</div><div class="line">        consumer1.close(); <span class="comment">// 会出现bug</span></div><div class="line">        thread.interrupt();</div><div class="line">        Thread.sleep(<span class="number">1000</span>);</div><div class="line">        System.out.println(<span class="string">"客户端1重启"</span>);</div><div class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> ConsumerRun(consumer1),<span class="string">"thread1"</span>).start();</div><div class="line"></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ConsumerRun</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</div><div class="line"></div><div class="line">        <span class="keyword">private</span> Consumer consumer;</div><div class="line"></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="title">ConsumerRun</span><span class="params">(Consumer consumer)</span> </span>&#123;</div><div class="line">            <span class="keyword">this</span>.consumer = consumer;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            consumer.init();</div><div class="line">            consumer.getMessage(<span class="string">"test"</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>由于我不知道这里如何放置图片，测试的效果就不给大家了。总结一下，就是大概30秒后客户端1退出，然后1秒后，客户端1又启动，会发现它与别的客户端之间的数字相差1.</p>
+<p>JMS的持久化介绍就到这里结束，下面介绍JMS的事务。</p>
+<h3 id="2-JMS的事务机制"><a href="#2-JMS的事务机制" class="headerlink" title="2.JMS的事务机制"></a>2.JMS的事务机制</h3><p>大家对数据库的事务应该都很了解，jms的事务与之类似，有了事务机制能够保证jms的可靠性。当然持久化也是为了保证jms的可靠性。</p>
+<p>持久化消息可以让宕机重启情况保证消息依然能够收到，而事务则是在业务逻辑出现bug时消息能够回滚，从而时之后bug修复后能够收到该消息。</p>
+<p>这里写一下：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">while (true) &#123;</div><div class="line">                Thread.sleep(1000);</div><div class="line">                try &#123;</div><div class="line">                    TextMessage message = (TextMessage) consumer.receive();</div><div class="line">                    if (message != null) &#123;</div><div class="line">                        message.acknowledge();</div><div class="line">                        System.out.println(Thread.currentThread().getName()+&quot;: Consumer:我是消费者，我正在消费Msg&quot;+message.getText()+&quot;---&gt;&quot;+count.getAndIncrement());</div><div class="line">                    &#125;</div><div class="line">                    if (count.get() == a) &#123;</div><div class="line">                        throw new RuntimeException(Thread.currentThread().getName() + &quot;:有错误啦&quot;);</div><div class="line">                    &#125;</div><div class="line">                    session.commit();</div><div class="line">                &#125; catch (RuntimeException e) &#123;</div><div class="line">                    e.printStackTrace();</div><div class="line">                    session.rollback();</div><div class="line">                &#125;</div><div class="line"></div><div class="line">            &#125;</div></pre></td></tr></table></figure>
+<p>这是将第一讲中的消费者while(true)部分修改的，经过测试后，当某个线程出现错误，然后下一轮循环它的count是比别的要少的，这是因为事务回滚它重新消费。</p>
+<p>我在谈一下这里的session，有心人应该注意到我的第一讲中session并没有commit，这是错误的，如果不commit，代表它并没有被消费.</p>
+<p>在client的session创建时方法connection.createSession()，有两个参数，后一个参数指定session的模式，分别是：<br>Session.AUTO_ACKNOWLEDGE为自动确认，客户端发送和接收消息不需要做额外的工作。<br>Session.CLIENT_ACKNOWLEDGE为客户端确认。客户端接收到消息后，必须调用javax.jms.Message的acknowledge方法。jms服务器才会删除消息。<br>DUPS_OK_ACKNOWLEDGE允许副本的确认模式。一旦接收方应用程序的方法调用从处理消息处返回，会话对象就会确认消息的接收；而且允许重复确认。在需要考虑资源使用时，这种模式非常有效。</p>
+<p>但在第一个参数为true时以上都可以被忽略。session模式被指定为SESSION_TRANSACTED。</p>
+<h3 id="3-总结"><a href="#3-总结" class="headerlink" title="3.总结"></a>3.总结</h3><p>JMS的持久化和事务机制基本上能够保证JMS的可靠性。持久化解决了宕机的情况，而事务则是出现bug的时候或者某些特殊情况。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/22/how-to-use-activeMq-3/" data-id="cj7x3nnwt0000muicmhio6gq4" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/lgb-blog/2017/09/21/how-to-use-activeMq-1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">使用activeMq(一)</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/lgb-blog/tags/activeMq/" style="font-size: 20px;">activeMq</a> <a href="/lgb-blog/tags/jms/" style="font-size: 20px;">jms</a> <a href="/lgb-blog/tags/spring/" style="font-size: 10px;">spring</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/lgb-blog/2017/09/22/how-to-use-activeMq-3/">使用activeMq(三)</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/09/21/how-to-use-activeMq-1/">使用activeMq(一)</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/09/21/how-to-use-activeMq-2/">使用activeMq(二)</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 刘国兵<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/lgb-blog/" class="mobile-nav-link">Home</a>
+  
+    <a href="/lgb-blog/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/lgb-blog/fancybox/jquery.fancybox.css">
+  <script src="/lgb-blog/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/lgb-blog/js/script.js"></script>
+
+  </div>
+</body>
+</html>
