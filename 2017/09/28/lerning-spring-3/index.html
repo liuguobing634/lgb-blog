@@ -13,7 +13,7 @@
 <meta property="og:site_name" content="刘国兵的博客">
 <meta property="og:description" content="spring的事务管理spring是支持两种事务的，编程式与声明式，编程式是使用TransactionTemplate，但编程式事务管理代码侵入性太高，所以推荐使用声明式。 我先来回顾一下什么是事务吧。 1 事务事务很简单，就是做一件事情。而一件事情往往是分步骤的，然后这些步骤很可能回出现错误，这时候要应对这些错误进行处理。 事务有四大特性：  第一是原子性，这件事整个过程是应该统一的，每个步骤出">
 <meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2017-09-28T16:15:55.000Z">
+<meta property="og:updated_time" content="2017-09-28T16:18:03.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="spring学习（三）">
 <meta name="twitter:description" content="spring的事务管理spring是支持两种事务的，编程式与声明式，编程式是使用TransactionTemplate，但编程式事务管理代码侵入性太高，所以推荐使用声明式。 我先来回顾一下什么是事务吧。 1 事务事务很简单，就是做一件事情。而一件事情往往是分步骤的，然后这些步骤很可能回出现错误，这时候要应对这些错误进行处理。 事务有四大特性：  第一是原子性，这件事整个过程是应该统一的，每个步骤出">
@@ -58,9 +58,9 @@
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liuguobing634.github.io/lgb-blog"></form>
@@ -120,7 +120,8 @@
 </ol>
 <p>一般情况下我们会选择Read committed，保证性能的同时也对事务有一定的隔离，虽然会出现不可重复读和幻读，但一般的应用这样比较少，然后可以利用一些开发中的乐观锁和悲观锁解决。这里引申出两个概念：</p>
 <ol>
-<li>悲观锁，悲观锁是依赖于数据库锁的，一般是在整个数据处理过程都锁住数据，不过这样带来的是性能低下<br>2.乐观锁，乐观锁一般是外部程序控制的，比如hibernate的乐观锁。乐观锁大多数是基于数据版本记录机制实现。</li>
+<li>悲观锁，悲观锁是依赖于数据库锁的，一般是在整个数据处理过程都锁住数据，不过这样带来的是性能低下</li>
+<li>乐观锁，乐观锁一般是外部程序控制的，比如hibernate的乐观锁。乐观锁大多数是基于数据版本记录机制实现。</li>
 </ol>
 <p>hibernate实现了这两种锁（严格来说是第一种锁依赖于数据库，hibernate只是做了相关处理），但是mybatis并没有自己去实现这两种锁，需要我们自己去弄。</p>
 <h3 id="2-spring的事务相关"><a href="#2-spring的事务相关" class="headerlink" title="2 spring的事务相关"></a>2 spring的事务相关</h3><p>spring的事务主要是配置这事务隔离级别、事务传播行为、事务超时、回滚规则。</p>
@@ -149,7 +150,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-3/" data-id="cj84nvur90000a19emm0haq4g" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-3/" data-id="cj84nvur90000a19emm0haq4g" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
@@ -162,7 +163,7 @@
   
   
     <a href="/lgb-blog/2017/09/28/lerning-spring-2/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Older</strong>
+      <strong class="article-nav-caption">Ancien</strong>
       <div class="article-nav-title">spring学习（二）</div>
     </a>
   
@@ -177,7 +178,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Categories</h3>
+    <h3 class="widget-title">Catégories</h3>
     <div class="widget">
       <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/activeMq/">activeMq</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/dubbo/">dubbo</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/spring/">spring</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/zookeeper/">zookeeper</a></li></ul>
     </div>
@@ -187,7 +188,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
+    <h3 class="widget-title">Mot-clés</h3>
     <div class="widget">
       <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li></ul>
     </div>
@@ -197,7 +198,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
+    <h3 class="widget-title">Nuage de mot-clés</h3>
     <div class="widget tagcloud">
       <a href="/lgb-blog/tags/activeMq/" style="font-size: 16.67px;">activeMq</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 10px;">dubbo</a> <a href="/lgb-blog/tags/jms/" style="font-size: 16.67px;">jms</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a>
     </div>
@@ -216,7 +217,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">Articles récents</h3>
     <div class="widget">
       <ul>
         
@@ -253,7 +254,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 刘国兵<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
