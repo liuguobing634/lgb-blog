@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Spring学习（4） | 刘国兵的博客</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="SpringBoot与dubbo的搭配使用之前讲过dubbo，但在一个项目中，感觉不过瘾，今天就试一下gradle的多模块项目，然后想到dubbo是多项目之间的配合，所以就拿dubbo来试炼。 idea创建多模块项目很简单，直接在一个工程中再创建一个module就行了，选择gradle，然后setting.gradle就会自动添加import “项目名” 这个项目需要三个模块的，一个是表示服务，另">
+<meta name="keywords" content="dubbo,spring,spring-boot">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Spring学习（4）">
+<meta property="og:url" content="http://liuguobing634.github.io/lgb-blog/2017/09/29/lerning-spring-4/index.html">
+<meta property="og:site_name" content="刘国兵的博客">
+<meta property="og:description" content="SpringBoot与dubbo的搭配使用之前讲过dubbo，但在一个项目中，感觉不过瘾，今天就试一下gradle的多模块项目，然后想到dubbo是多项目之间的配合，所以就拿dubbo来试炼。 idea创建多模块项目很简单，直接在一个工程中再创建一个module就行了，选择gradle，然后setting.gradle就会自动添加import “项目名” 这个项目需要三个模块的，一个是表示服务，另">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2017-09-29T15:28:25.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Spring学习（4）">
+<meta name="twitter:description" content="SpringBoot与dubbo的搭配使用之前讲过dubbo，但在一个项目中，感觉不过瘾，今天就试一下gradle的多模块项目，然后想到dubbo是多项目之间的配合，所以就拿dubbo来试炼。 idea创建多模块项目很简单，直接在一个工程中再创建一个module就行了，选择gradle，然后setting.gradle就会自动添加import “项目名” 这个项目需要三个模块的，一个是表示服务，另">
+  
+    <link rel="alternate" href="/atom.xml" title="刘国兵的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/lgb-blog/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/lgb-blog/" id="logo">刘国兵的博客</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/lgb-blog/" id="subtitle">技术无止境</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/lgb-blog/">Home</a>
+        
+          <a class="main-nav-link" href="/lgb-blog/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liuguobing634.github.io/lgb-blog"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-lerning-spring-4" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lgb-blog/2017/09/29/lerning-spring-4/" class="article-date">
+  <time datetime="2017-09-29T13:26:37.000Z" itemprop="datePublished">2017-09-29</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/lgb-blog/categories/spring/">spring</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Spring学习（4）
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="SpringBoot与dubbo的搭配使用"><a href="#SpringBoot与dubbo的搭配使用" class="headerlink" title="SpringBoot与dubbo的搭配使用"></a>SpringBoot与dubbo的搭配使用</h2><p>之前讲过dubbo，但在一个项目中，感觉不过瘾，今天就试一下gradle的多模块项目，然后想到dubbo是多项目之间的配合，所以就拿dubbo来试炼。</p>
+<p>idea创建多模块项目很简单，直接在一个工程中再创建一个module就行了，选择gradle，然后setting.gradle就会自动添加import “项目名”</p>
+<p>这个项目需要三个模块的，一个是表示服务，另两个分别是服务提供者和消费者，后两个都依赖于服务。</p>
+<p>先来看服务的代码。</p>
+<h3 id="1-服务接口部分"><a href="#1-服务接口部分" class="headerlink" title="1 服务接口部分"></a>1 服务接口部分</h3><p>我是在一个已存在的项目上创建的，直接创建module：java-demos-service，然后在这个下面的gradle文件中写上下面的代码：</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line">group <span class="string">'lew.bing'</span></div><div class="line">version <span class="string">'1.0-SNAPSHOT'</span></div><div class="line"></div><div class="line">apply <span class="string">plugin:</span> <span class="string">'java'</span></div><div class="line"></div><div class="line">sourceCompatibility = <span class="number">1.8</span></div><div class="line"></div><div class="line">repositories &#123;</div><div class="line">    mavenCentral()</div><div class="line">&#125;</div><div class="line"></div><div class="line">dependencies &#123;</div><div class="line">    compileOnly <span class="string">group:</span> <span class="string">'org.hibernate'</span>, <span class="string">name:</span> <span class="string">'hibernate-core'</span>, <span class="string">version:</span> <span class="string">'5.0.12.Final'</span></div><div class="line">    testCompile <span class="string">group:</span> <span class="string">'junit'</span>, <span class="string">name:</span> <span class="string">'junit'</span>, <span class="string">version:</span> <span class="string">'4.12'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>依赖了两个东西，一个是junit，这个是ide自己写上的，我没动它，另一个是hibernate-code，用它是因为在provide中我需要使用hibernate，而在这里需要提供entity，有一些注解要用到，为了防止编译出错就加上它，并且是onlyCompile形式，也就是只让他编译通过就行。</p>
+<p>然后是写实体类，这里就写一个User, 在包lew.bing.domain下</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Entity</span></div><div class="line"><span class="meta">@Table</span>(name = <span class="string">"user_info"</span>)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">User</span> <span class="keyword">implements</span> <span class="title">Serializable</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Id</span></div><div class="line">    <span class="meta">@GeneratedValue</span>(strategy = GenerationType.IDENTITY)</div><div class="line">    <span class="keyword">private</span> Long id;</div><div class="line">    <span class="meta">@Column</span></div><div class="line">    <span class="keyword">private</span> String username;</div><div class="line">    <span class="meta">@Column</span></div><div class="line">    <span class="keyword">private</span> String password;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">User</span><span class="params">()</span> </span>&#123;</div><div class="line"></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">User</span><span class="params">(String username, String password)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.username = username;</div><div class="line">        <span class="keyword">this</span>.password = password;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> Long <span class="title">getId</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> id;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setId</span><span class="params">(Long id)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.id = id;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getUsername</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> username;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setUsername</span><span class="params">(String username)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.username = username;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">getPassword</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> password;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setPassword</span><span class="params">(String password)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.password = password;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>普通的pojo，只是加了几个注解，用于hibernate解析（spring-data-jpa）。</p>
+<p>然后是UserService接口，放在lew.bing.service下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">UserService</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function">User <span class="title">get</span><span class="params">(<span class="keyword">long</span> id)</span></span>;</div><div class="line"></div><div class="line">    <span class="function">User <span class="title">get</span><span class="params">(String username)</span></span>;</div><div class="line"></div><div class="line">    <span class="function">User <span class="title">register</span><span class="params">(String username, String password)</span></span>;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">boolean</span> <span class="title">destroy</span><span class="params">(User user)</span></span>;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">changePwd</span><span class="params">(User user)</span></span>;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>服务接口部分模块就完成了。</p>
+<h3 id="2-服务提供者部分"><a href="#2-服务提供者部分" class="headerlink" title="2 服务提供者部分"></a>2 服务提供者部分</h3><p>创建module，java-demos-provider</p>
+<p>服务提供者跟消费者我都使用了springBoot，服务提供者用了spring-boot-starter-data-jpa,用来提供服务。</p>
+<p>build.gradle:</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div></pre></td><td class="code"><pre><div class="line">group <span class="string">'lew.bing'</span></div><div class="line">version <span class="string">'1.0-SNAPSHOT'</span></div><div class="line"></div><div class="line">apply <span class="string">plugin:</span> <span class="string">'java'</span></div><div class="line"></div><div class="line">sourceCompatibility = <span class="number">1.8</span></div><div class="line"></div><div class="line"></div><div class="line">repositories &#123;</div><div class="line">    mavenCentral()</div><div class="line">&#125;</div><div class="line"></div><div class="line">dependencies &#123;</div><div class="line">    <span class="comment">// https://mvnrepository.com/artifact/org.apache.zookeeper/zookeeper</span></div><div class="line">    compile (<span class="string">group:</span> <span class="string">'org.apache.zookeeper'</span>, <span class="string">name:</span> <span class="string">'zookeeper'</span>, <span class="string">version:</span> <span class="string">'3.4.10'</span>) &#123;</div><div class="line">        exclude(<span class="string">group:</span><span class="string">"org.slf4j"</span>)</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// https://mvnrepository.com/artifact/com.101tec/zkclient</span></div><div class="line">    compile (<span class="string">group:</span> <span class="string">'com.101tec'</span>, <span class="string">name:</span> <span class="string">'zkclient'</span>, <span class="string">version:</span> <span class="string">'0.10'</span>) &#123;</div><div class="line">        exclude(<span class="string">group:</span><span class="string">"org.slf4j"</span>)</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// https://mvnrepository.com/artifact/com.alibaba/dubbo</span></div><div class="line">    compile(<span class="string">"com.alibaba:dubbo:2.5.5"</span>) &#123;</div><div class="line">        exclude(<span class="string">group:</span><span class="string">"org.springframework"</span>)</div><div class="line">        exclude(<span class="string">group:</span><span class="string">"org.slf4j"</span>)</div><div class="line">    &#125;</div><div class="line">    compile(<span class="string">"org.springframework.boot:spring-boot-starter-data-jpa:1.5.7.RELEASE"</span>)</div><div class="line">    compile(<span class="string">"org.springframework.boot:spring-boot-starter-test:1.5.7.RELEASE"</span>)</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">    compile <span class="string">"mysql:mysql-connector-java:6.0.6"</span></div><div class="line"></div><div class="line">    compile project(<span class="string">":java-demos-service"</span>)</div><div class="line"></div><div class="line">    testCompile <span class="string">group:</span> <span class="string">'junit'</span>, <span class="string">name:</span> <span class="string">'junit'</span>, <span class="string">version:</span> <span class="string">'4.12'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>因为各种框架都有slf4j，而这个会与spring-logging冲突，所以都排除掉，然后把dubbo的spring也排除，避免版本不一样而冲突。</p>
+<p>然后写一个lew.bing.dao.UserDao.java:<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">UserDao</span> <span class="keyword">extends</span> <span class="title">CrudRepository</span>&lt;<span class="title">User</span>,<span class="title">Long</span>&gt;</span>&#123;</div><div class="line"></div><div class="line">    <span class="function">User <span class="title">findFirstByUsername</span><span class="params">(String name)</span></span>;</div><div class="line"></div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>然后是service的实现类:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Service</span>(value = <span class="string">"userService"</span>)</div><div class="line"><span class="meta">@Transactional</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserServiceImpl</span> <span class="keyword">implements</span> <span class="title">UserService</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Autowired</span></div><div class="line">    <span class="keyword">private</span> UserDao userDao;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">UserServiceImpl</span><span class="params">()</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"user"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="meta">@Transactional</span>(readOnly = <span class="keyword">true</span>)</div><div class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">get</span><span class="params">(<span class="keyword">long</span> id)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> userDao.findOne(id);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="meta">@Transactional</span>(readOnly = <span class="keyword">true</span>)</div><div class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">get</span><span class="params">(String username)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> userDao.findFirstByUsername(username);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">register</span><span class="params">(String username, String password)</span> </span>&#123;</div><div class="line">        User user = <span class="keyword">new</span> User(username,password);</div><div class="line">        <span class="keyword">return</span> userDao.save(user);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">(User user)</span> </span>&#123;</div><div class="line">        userDao.delete(user);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">changePwd</span><span class="params">(User user)</span> </span>&#123;</div><div class="line">        User u = userDao.findOne(user.getId());</div><div class="line">        <span class="keyword">if</span> (u != <span class="keyword">null</span>) &#123;</div><div class="line">            u.setPassword(user.getPassword());</div><div class="line">            userDao.save(u);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>然后是是入口类BootStrap.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@SpringBootApplication</span></div><div class="line"><span class="meta">@EnableJpaRepositories</span></div><div class="line"><span class="meta">@EntityScan</span>(basePackages = <span class="string">"lew.bing.domain"</span>)</div><div class="line"><span class="meta">@EnableTransactionManagement</span></div><div class="line"><span class="meta">@ImportResource</span>(<span class="string">"classpath:dubbo.xml"</span>)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BootStrap</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">        System.out.println(<span class="string">"hello"</span>);</div><div class="line">        ApplicationContext context = SpringApplication.run(BootStrap.class, args);</div><div class="line">        System.out.println(<span class="string">"任意键退出"</span>);</div><div class="line">        <span class="keyword">new</span> BufferedInputStream(System.in).read();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>测试类这里就省略了。</p>
+<h3 id="3-服务的消费者"><a href="#3-服务的消费者" class="headerlink" title="3 服务的消费者"></a>3 服务的消费者</h3><p>创建module，java-demos-consumer。这里我用到了spring-boot-web，做成web项目.</p>
+<p>build.gradle:</p>
+<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">group <span class="string">'lew.bing'</span></div><div class="line">version <span class="string">'1.0-SNAPSHOT'</span></div><div class="line"></div><div class="line">apply <span class="string">plugin:</span> <span class="string">'java'</span></div><div class="line"></div><div class="line">sourceCompatibility = <span class="number">1.8</span></div><div class="line"></div><div class="line">repositories &#123;</div><div class="line">    mavenCentral()</div><div class="line">&#125;</div><div class="line"></div><div class="line">dependencies &#123;</div><div class="line">    <span class="comment">// https://mvnrepository.com/artifact/org.apache.zookeeper/zookeeper</span></div><div class="line">    compile (<span class="string">group:</span> <span class="string">'org.apache.zookeeper'</span>, <span class="string">name:</span> <span class="string">'zookeeper'</span>, <span class="string">version:</span> <span class="string">'3.4.10'</span>) &#123;</div><div class="line">        exclude(<span class="string">group:</span><span class="string">"org.slf4j"</span>)</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="comment">// https://mvnrepository.com/artifact/com.101tec/zkclient</span></div><div class="line">    compile (<span class="string">group:</span> <span class="string">'com.101tec'</span>, <span class="string">name:</span> <span class="string">'zkclient'</span>, <span class="string">version:</span> <span class="string">'0.10'</span>) &#123;</div><div class="line">        exclude(<span class="string">group:</span><span class="string">"org.slf4j"</span>)</div><div class="line">    &#125;</div><div class="line">    <span class="comment">// https://mvnrepository.com/artifact/com.alibaba/dubbo</span></div><div class="line">    compile(<span class="string">"com.alibaba:dubbo:2.5.5"</span>) &#123;</div><div class="line">        exclude(<span class="string">group:</span><span class="string">"org.springframework"</span>)</div><div class="line">        exclude(<span class="string">group:</span><span class="string">"org.slf4j"</span>)</div><div class="line">    &#125;</div><div class="line">    compile(<span class="string">"org.springframework.boot:spring-boot-starter-web:1.5.7.RELEASE"</span>)</div><div class="line">    compile (project(<span class="string">":java-demos-service"</span>)) &#123;</div><div class="line">        exclude(<span class="string">group:</span><span class="string">"org.hibernate"</span>)</div><div class="line">    &#125;</div><div class="line">    testCompile <span class="string">group:</span> <span class="string">'junit'</span>, <span class="string">name:</span> <span class="string">'junit'</span>, <span class="string">version:</span> <span class="string">'4.12'</span></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>一个控制类, ApplicationController.java</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Controller</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ApplicationController</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Autowired</span></div><div class="line">    <span class="keyword">private</span> UserService userService;</div><div class="line"></div><div class="line">    <span class="meta">@ResponseBody</span></div><div class="line">    <span class="meta">@RequestMapping</span>(<span class="string">"/user/&#123;id:\\d+&#125;"</span>)</div><div class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">index</span><span class="params">(@PathVariable <span class="keyword">long</span> id)</span> </span>&#123;</div><div class="line">        User user = userService.get(id);</div><div class="line">        <span class="keyword">return</span> user;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>入口类，BootStrap.class:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@SpringBootApplication</span></div><div class="line"><span class="meta">@EnableWebMvc</span></div><div class="line"><span class="meta">@ComponentScan</span>(basePackages = <span class="string">"lew.bing.web"</span>)</div><div class="line"><span class="meta">@ImportResource</span>(<span class="string">"classpath:dubbo.xml"</span>)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BootStrap</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        SpringApplication.run(BootStrap.class, args);</div><div class="line">    &#125;</div><div class="line"></div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>启动访问 <a href="http://localhost:8080/user/2" target="_blank" rel="external">http://localhost:8080/user/2</a> , 成功显示对应User</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/29/lerning-spring-4/" data-id="cj861mn1x0006ey9ep0ykt7rx" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/lgb-blog/2017/09/28/lerning-spring-3/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">spring学习（三）</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/activeMq/">activeMq</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/dubbo/">dubbo</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/spring/">spring</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/zookeeper/">zookeeper</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/lgb-blog/tags/activeMq/" style="font-size: 16.67px;">activeMq</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 13.33px;">dubbo</a> <a href="/lgb-blog/tags/jms/" style="font-size: 16.67px;">jms</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/lgb-blog/2017/09/29/lerning-spring-4/">Spring学习（4）</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/09/28/lerning-spring-3/">spring学习（三）</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/09/28/lerning-spring-2/">spring学习（二）</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/09/27/lerning-spring-1/">学习spring-第一讲</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/09/26/dubbo-testing-1/">dubbo-testing-1</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 刘国兵<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/lgb-blog/" class="mobile-nav-link">Home</a>
+  
+    <a href="/lgb-blog/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/lgb-blog/fancybox/jquery.fancybox.css">
+  <script src="/lgb-blog/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/lgb-blog/js/script.js"></script>
+
+  </div>
+</body>
+</html>
