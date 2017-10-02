@@ -69,6 +69,49 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-what-is-cluster" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lgb-blog/2017/10/01/what-is-cluster/" class="article-date">
+  <time datetime="2017-10-01T14:57:00.000Z" itemprop="datePublished">2017-10-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/lgb-blog/2017/10/01/what-is-cluster/">我所理解的集群</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="集群的简介"><a href="#集群的简介" class="headerlink" title="集群的简介"></a>集群的简介</h2><p>集群，我给的定义是：分布式是对外部变现为单一的系统，对内部则是有一组服务和资源组成的系统，能够提供负载均衡、并行计算和高可用性。</p>
+<p>那我根据这个定义来看，首先是要对外部是单一的系统，假设系统是web服务，那么对于任何同样的请求，应该得到的同样的响应，我们为了能够达到负载均衡的目的，往往就将同样的服务部署到多台机器或者在一台机器启动多个，所以对于这样的一个条件，则会衍生出一个问题，那就是这些服务之间的状态是可能不一样的，比如对于web服务器，一个用户登录时可能用到的是其中的某一台，登录之后保存了他的信息到session中，而之后他做的其他操作，系统给他分配到了另一台服务器，可是那一台服务器并不存在这一条session，这样数据就不同步，同样的请求返回的数据不一样。所以衍生出了很多种办法，有一种是使用了jwt的技术来达到服务无状态的目的，这个我们不谈论，另一种用得较多的则是改变session的管理方式，将它放到一个公共的能够访问到的app上，这个app往往由缓存服务例如redis担当。这只是web服务的负载均衡，当请求达到了一定的量，单台数据库连接也会出现崩溃的情况，所以数据库也需要多台来负载均衡，于是又会出现刚才那样的情况，比如一个事务对一台服务器的数据进行了修改，另一个查询的事务查询的不是这台服务器，那么这就会出现脏读的情况，所以数据库之间的数据同步很重要，这就出现了各种数据库主从同步复制等方案。各类程序的集群都会面临这样的问题，如缓存服务、如zookeeper等，有的他们内部做出了处理我们不太需要管，有的不是天生为集群而生，则可能一开始没考虑到这问题，那么就需要我们去耍一些手段了，这里我就不一一讲解这些手段。</p>
+<p>集群还有一个高可用性的特征，也就是说集群的机器比单机要稳定很多，在高并发下，单机的宕机率是很高的，集群因为有了负载均衡，所以每台机器理论上收到的连接是平均分的，但也会出现其中一台或几台宕机的情况，那么这时候服务应该还要可用，所以在集群方案中我们应该对宕机了的机器进行处置，让他无法轮询到，直到他可用的那一刻，这时候就可以用zookeeper这样的app进行服务注册和主从选择，当然对于web应用来说，nginx已经可以做到很好了。</p>
+<p>对于并行计算，我所了解的不多，相关的应用我只知道hadoop极其衍生的工具如spark等，所以我也就不去分析。</p>
+<p>根据我说说的这几点，对于一个应用来说，如果要给出它的集群方案，我们就应该从上述几点去分析，然后给出相应的对策即可。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/01/what-is-cluster/" data-id="cj89kt8xf000gin9eujh558mq" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-lerning-spring-4" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/lgb-blog/2017/09/29/lerning-spring-4/" class="article-date">
@@ -131,7 +174,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/29/lerning-spring-4/" data-id="cj861mn1x0006ey9ep0ykt7rx" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/29/lerning-spring-4/" data-id="cj89kt8x8000bin9e662z7a61" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li></ul>
@@ -224,7 +267,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-3/" data-id="cj861mn2g000gey9eja9j7yyo" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-3/" data-id="cj89kt8xe000fin9enadvpkww" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
@@ -301,7 +344,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-2/" data-id="cj861mn2c000bey9e48ovo8v2" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-2/" data-id="cj89kt8wx000ain9en7ij1dqn" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
@@ -376,7 +419,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/27/lerning-spring-1/" data-id="cj861mn2a000aey9eqtyq2xbw" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/27/lerning-spring-1/" data-id="cj89kt8ws0006in9eygk2qy1k" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
@@ -471,7 +514,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/26/dubbo-testing-1/" data-id="cj861mn0w0000ey9eo1a2fvyk" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/26/dubbo-testing-1/" data-id="cj89kt8wb0000in9ewcsj2idp" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li></ul>
@@ -537,7 +580,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/25/zookeeper-testing-2/" data-id="cj861mn2i000key9e9zni4try" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/25/zookeeper-testing-2/" data-id="cj89kt8yd001pin9eexroe4od" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li></ul>
@@ -596,7 +639,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/24/zookeeper-testing-1/" data-id="cj861mn2f000fey9e5dide0tk" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/24/zookeeper-testing-1/" data-id="cj89kt8xh000kin9ev65zxf7i" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li></ul>
@@ -667,7 +710,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/22/how-to-use-activeMq-3/" data-id="cj861mn1p0005ey9e4g07hdhl" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/22/how-to-use-activeMq-3/" data-id="cj89kt8wp0005in9ee9hs789d" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li></ul>
@@ -725,7 +768,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/21/how-to-use-activeMq-1/" data-id="cj861mn130001ey9eqfnv63h2" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/21/how-to-use-activeMq-1/" data-id="cj89kt8wh0001in9ef006b6dl" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li></ul>
@@ -737,72 +780,11 @@
 
 
   
-    <article id="post-how-to-use-activeMq-2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/lgb-blog/2017/09/21/how-to-use-activeMq-2/" class="article-date">
-  <time datetime="2017-09-21T11:54:07.000Z" itemprop="datePublished">2017-09-21</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/lgb-blog/categories/activeMq/">activeMq</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/lgb-blog/2017/09/21/how-to-use-activeMq-2/">使用activeMq(二)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="activeMq-结合-spring"><a href="#activeMq-结合-spring" class="headerlink" title="activeMq 结合 spring"></a>activeMq 结合 spring</h2><p>spring已差不多成为java项目的标配了，它的核心两大功能aop与ioc让它变得像一个万用插头，什么都能够搭配起来，jms当然不在话下。</p>
-<p>本文将讲解spring与jms的结合，而此jms产品自然选择的是activeMq。</p>
-<p>spring与jms结合有几个步骤，习惯了spring用annotation方式，所以我这里也是如此，没有使用xml配置文件。</p>
-<p>首先，写配置类：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Configuration</span></div><div class="line"><span class="meta">@EnableJms</span></div><div class="line"><span class="meta">@ComponentScan</span>(basePackages = &#123;<span class="string">"basepackage"</span>&#125;)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AppConfig</span> </span>&#123;</div><div class="line"></div><div class="line">     ... </div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>像普通的配置类一样，但需要加一个@EnableJms进来.</p>
-<p>然后是配置jmsListenerContainerFactory, 注意如果使用上面那个annotation，就应该用这个factory，当然实际上这个只是为了consumer使用，如果只配置producer就不需要，下面有讲述。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">        <span class="meta">@Bean</span></div><div class="line">        <span class="function"><span class="keyword">public</span> DefaultJmsListenerContainerFactory <span class="title">jmsListenerContainerFactory</span><span class="params">()</span> </span>&#123;</div><div class="line">            DefaultJmsListenerContainerFactory factory =</div><div class="line">                    <span class="keyword">new</span> DefaultJmsListenerContainerFactory();</div><div class="line">            factory.setConnectionFactory(connectionFactory());</div><div class="line">            factory.setConcurrency(<span class="string">"3-10"</span>);</div><div class="line"><span class="comment">//            factory.setPubSubDomain(true);  1</span></div><div class="line">    </div><div class="line">            <span class="keyword">return</span> factory;</div><div class="line">        &#125;</div></pre></td></tr></table></figure>
-<p>如果把1那个注释去掉，那么是发布订阅模式，否则是点对点（这个需要看情况，这里是activemq，有两类，还有的jms框架，只有一类）</p>
-<p>这里有一个方法 connectorFactory()，实际上它就是实际要使用的jms的connectionFactory，代码如下:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Bean</span></div><div class="line"><span class="function"><span class="keyword">public</span> ConnectionFactory <span class="title">connectionFactory</span><span class="params">()</span> </span>&#123;</div><div class="line">    SingleConnectionFactory singleConnectionFactory = <span class="keyword">new</span> SingleConnectionFactory();</div><div class="line">    singleConnectionFactory.setTargetConnectionFactory(<span class="keyword">new</span> ActiveMQConnectionFactory());</div><div class="line">    <span class="keyword">return</span> singleConnectionFactory;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>我返回的是singleConnectionFactory，它是spring定义的一个factory，其实只是一个代理类（静态代理），实际使用的是new ActiveMQConnectionFactory().</p>
-<p>配置可以说到这里就结束了，如果你只需要接受消息的话。但接受消息的代码还没写呢，这里有两种方式，第一是在配置类中实现接口JmsListenerConfigurer, 如下:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Configuration</span></div><div class="line"><span class="meta">@EnableJms</span></div><div class="line"><span class="meta">@ComponentScan</span>(basePackages = &#123;<span class="string">"basepackage"</span>&#125;)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AppConfig</span> <span class="keyword">implements</span> <span class="title">JmsListenerConfigurer</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Logger logger = LoggerFactory.getLogger(AppConfig.class);</div><div class="line">    </div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">configureJmsListeners</span><span class="params">(JmsListenerEndpointRegistrar registrar)</span> </span>&#123;</div><div class="line">            <span class="comment">// 测试register是干嘛的</span></div><div class="line">    </div><div class="line">            SimpleJmsListenerEndpoint endpoint = <span class="keyword">new</span> SimpleJmsListenerEndpoint();</div><div class="line">            endpoint.setId(<span class="string">"myJmsEndpoint"</span>);</div><div class="line">            endpoint.setDestination(<span class="string">"aaa"</span>);</div><div class="line">            endpoint.setMessageListener(message -&gt; &#123;</div><div class="line">                System.out.println(message);</div><div class="line">                <span class="comment">// processing</span></div><div class="line">                <span class="keyword">if</span> (message <span class="keyword">instanceof</span> TextMessage) &#123;</div><div class="line">                    <span class="keyword">try</span> &#123;</div><div class="line">                        logger.info(<span class="string">"receive message: &#123;&#125;"</span>, ((TextMessage) message).getText());</div><div class="line">                    &#125; <span class="keyword">catch</span> (JMSException e) &#123;</div><div class="line">                        e.printStackTrace();</div><div class="line">                    &#125;</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    logger.info(<span class="string">"unknown message"</span>);</div><div class="line">                &#125;</div><div class="line">            &#125;);</div><div class="line">            registrar.registerEndpoint(endpoint);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">     ... </div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这种事统一配置一个destination的消息处理，还有一种就是在component的方法中加一个Annotation @JmsListener(destination = “xxx”)，代码如下:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Component</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyService</span> </span>&#123;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Logger logger = LoggerFactory.getLogger(MyService.class);</div><div class="line"></div><div class="line">    <span class="meta">@Autowired</span></div><div class="line">    <span class="keyword">private</span> JmsTemplate jmsTemplate;</div><div class="line"></div><div class="line">    </div><div class="line">    <span class="meta">@JmsListener</span>(destination = <span class="string">"aaa"</span>)</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">aaaReceiveMessage</span><span class="params">(TextMessage name)</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            String msg = name.getText();</div><div class="line">            logger.info(<span class="string">"aaa message: &#123;&#125;, receive time: &#123;&#125;"</span>, msg, <span class="keyword">new</span> Date(name.getJMSTimestamp()));</div><div class="line">        &#125; <span class="keyword">catch</span> (JMSException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@JmsListener</span>(destination = <span class="string">"aaa2"</span>)</div><div class="line">    <span class="comment">//这个什么用呢</span></div><div class="line">    <span class="meta">@SendTo</span>(<span class="string">"aaa"</span>)</div><div class="line">    <span class="function"><span class="keyword">public</span> Message&lt;String&gt; <span class="title">aaa2ReceiveMessageAndSendToAaa</span><span class="params">(TextMessage name)</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            String msg = name.getText();</div><div class="line">            logger.info(<span class="string">"aaa2 message: &#123;&#125;, receive time: &#123;&#125;"</span>, msg, <span class="keyword">new</span> Date(name.getJMSTimestamp()));</div><div class="line">            <span class="keyword">return</span> MessageBuilder.withPayload(msg).build();</div><div class="line">        &#125; <span class="keyword">catch</span> (JMSException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">aaa2SendMessage</span><span class="params">(<span class="keyword">final</span> String name)</span> </span>&#123;</div><div class="line"><span class="comment">//        logger.info("message2:&#123;&#125;", name.getPayload());</span></div><div class="line">        jmsTemplate.convertAndSend(<span class="string">"aaa2"</span>,name);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这段代码后面也要用到，我们先看aaaReceiveMessage方法，这个加了一个JmsListener(destination = “aaa”),也就是当接受到一个destination（也就是topic或者点对点情况下的queue）叫做”aaa”的TextMessage消息时，会执行该方法。</p>
-<p>然后再看aaa2ReceiveMessageAndSendToAaa方法还有一个@SendTo(“aaa)，这个是接受到这个消息后，然后把返回的值发送到destination为”aaa”的队列中取，经测试，如果没有@JmsListener，只有一个SentTo，执行该方法是不会把消息发送到消息队列中的。发送消息要我接下来说的JmsTemplate。</p>
-<p>要使用JmsTemplate，自然要先添加这个bean，代码如下:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">    <span class="meta">@Bean</span></div><div class="line">        <span class="function"><span class="keyword">public</span> JmsTemplate <span class="title">jmsTemplate</span><span class="params">()</span> </span>&#123;</div><div class="line">            JmsTemplate jmsTemplate = <span class="keyword">new</span> JmsTemplate();</div><div class="line">            jmsTemplate.setConnectionFactory(connectionFactory());</div><div class="line">            jmsTemplate.setDefaultDestinationName(<span class="string">"aaa2"</span>);</div><div class="line"><span class="comment">//            jmsTemplate.setPubSubDomain(true); 2</span></div><div class="line">            <span class="keyword">return</span> jmsTemplate;</div><div class="line">        &#125;</div></pre></td></tr></table></figure>
-<p>同样如果要采用pub/sub，就要写上注释2</p>
-<p>然后使用方式就如上面的代码中最下面那个aaa2SendMessage方法一样，当然JmsTemplate有几类方式创建发送消息，这里采取的方式相对较简单。</p>
-<p>spring结合jms的简单使用就完成了，当然实际情况会更复杂，这些还有很多配置项可以去配置，大家可以做下测试，我就不详述了。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/21/how-to-use-activeMq-2/" data-id="cj861mn1m0004ey9exyut59w1" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
 
 
-  
-
+  <nav id="page-nav">
+    <span class="page-number current">1</span><a class="page-number" href="/lgb-blog/page/2/">2</a><a class="extend next" rel="next" href="/lgb-blog/page/2/">__('next') &raquo;</a>
+  </nav>
 </section>
         
           <aside id="sidebar">
@@ -821,7 +803,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li></ul>
     </div>
   </div>
 
@@ -831,7 +813,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/lgb-blog/tags/activeMq/" style="font-size: 16.67px;">activeMq</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 13.33px;">dubbo</a> <a href="/lgb-blog/tags/jms/" style="font-size: 16.67px;">jms</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a>
+      <a href="/lgb-blog/tags/activeMq/" style="font-size: 16.67px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 13.33px;">dubbo</a> <a href="/lgb-blog/tags/jms/" style="font-size: 16.67px;">jms</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a>
     </div>
   </div>
 
@@ -840,7 +822,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/09/">September 2017</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/09/">September 2017</a></li></ul>
     </div>
   </div>
 
@@ -851,6 +833,10 @@
     <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/01/what-is-cluster/">我所理解的集群</a>
+          </li>
         
           <li>
             <a href="/lgb-blog/2017/09/29/lerning-spring-4/">Spring学习（4）</a>
@@ -866,10 +852,6 @@
         
           <li>
             <a href="/lgb-blog/2017/09/27/lerning-spring-1/">学习spring-第一讲</a>
-          </li>
-        
-          <li>
-            <a href="/lgb-blog/2017/09/26/dubbo-testing-1/">dubbo-testing-1</a>
           </li>
         
       </ul>

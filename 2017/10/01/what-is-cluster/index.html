@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>我所理解的集群 | 刘国兵的博客</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="集群的简介集群，我给的定义是：分布式是对外部变现为单一的系统，对内部则是有一组服务和资源组成的系统，能够提供负载均衡、并行计算和高可用性。 那我根据这个定义来看，首先是要对外部是单一的系统，假设系统是web服务，那么对于任何同样的请求，应该得到的同样的响应，我们为了能够达到负载均衡的目的，往往就将同样的服务部署到多台机器或者在一台机器启动多个，所以对于这样的一个条件，则会衍生出一个问题，那就是这些">
+<meta name="keywords" content="cluster">
+<meta property="og:type" content="article">
+<meta property="og:title" content="我所理解的集群">
+<meta property="og:url" content="http://liuguobing634.github.io/lgb-blog/2017/10/01/what-is-cluster/index.html">
+<meta property="og:site_name" content="刘国兵的博客">
+<meta property="og:description" content="集群的简介集群，我给的定义是：分布式是对外部变现为单一的系统，对内部则是有一组服务和资源组成的系统，能够提供负载均衡、并行计算和高可用性。 那我根据这个定义来看，首先是要对外部是单一的系统，假设系统是web服务，那么对于任何同样的请求，应该得到的同样的响应，我们为了能够达到负载均衡的目的，往往就将同样的服务部署到多台机器或者在一台机器启动多个，所以对于这样的一个条件，则会衍生出一个问题，那就是这些">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2017-10-02T02:47:53.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="我所理解的集群">
+<meta name="twitter:description" content="集群的简介集群，我给的定义是：分布式是对外部变现为单一的系统，对内部则是有一组服务和资源组成的系统，能够提供负载均衡、并行计算和高可用性。 那我根据这个定义来看，首先是要对外部是单一的系统，假设系统是web服务，那么对于任何同样的请求，应该得到的同样的响应，我们为了能够达到负载均衡的目的，往往就将同样的服务部署到多台机器或者在一台机器启动多个，所以对于这样的一个条件，则会衍生出一个问题，那就是这些">
+  
+    <link rel="alternate" href="/atom.xml" title="刘国兵的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/lgb-blog/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/lgb-blog/" id="logo">刘国兵的博客</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/lgb-blog/" id="subtitle">技术无止境</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/lgb-blog/">Home</a>
+        
+          <a class="main-nav-link" href="/lgb-blog/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liuguobing634.github.io/lgb-blog"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-what-is-cluster" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lgb-blog/2017/10/01/what-is-cluster/" class="article-date">
+  <time datetime="2017-10-01T14:57:00.000Z" itemprop="datePublished">2017-10-01</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      我所理解的集群
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="集群的简介"><a href="#集群的简介" class="headerlink" title="集群的简介"></a>集群的简介</h2><p>集群，我给的定义是：分布式是对外部变现为单一的系统，对内部则是有一组服务和资源组成的系统，能够提供负载均衡、并行计算和高可用性。</p>
+<p>那我根据这个定义来看，首先是要对外部是单一的系统，假设系统是web服务，那么对于任何同样的请求，应该得到的同样的响应，我们为了能够达到负载均衡的目的，往往就将同样的服务部署到多台机器或者在一台机器启动多个，所以对于这样的一个条件，则会衍生出一个问题，那就是这些服务之间的状态是可能不一样的，比如对于web服务器，一个用户登录时可能用到的是其中的某一台，登录之后保存了他的信息到session中，而之后他做的其他操作，系统给他分配到了另一台服务器，可是那一台服务器并不存在这一条session，这样数据就不同步，同样的请求返回的数据不一样。所以衍生出了很多种办法，有一种是使用了jwt的技术来达到服务无状态的目的，这个我们不谈论，另一种用得较多的则是改变session的管理方式，将它放到一个公共的能够访问到的app上，这个app往往由缓存服务例如redis担当。这只是web服务的负载均衡，当请求达到了一定的量，单台数据库连接也会出现崩溃的情况，所以数据库也需要多台来负载均衡，于是又会出现刚才那样的情况，比如一个事务对一台服务器的数据进行了修改，另一个查询的事务查询的不是这台服务器，那么这就会出现脏读的情况，所以数据库之间的数据同步很重要，这就出现了各种数据库主从同步复制等方案。各类程序的集群都会面临这样的问题，如缓存服务、如zookeeper等，有的他们内部做出了处理我们不太需要管，有的不是天生为集群而生，则可能一开始没考虑到这问题，那么就需要我们去耍一些手段了，这里我就不一一讲解这些手段。</p>
+<p>集群还有一个高可用性的特征，也就是说集群的机器比单机要稳定很多，在高并发下，单机的宕机率是很高的，集群因为有了负载均衡，所以每台机器理论上收到的连接是平均分的，但也会出现其中一台或几台宕机的情况，那么这时候服务应该还要可用，所以在集群方案中我们应该对宕机了的机器进行处置，让他无法轮询到，直到他可用的那一刻，这时候就可以用zookeeper这样的app进行服务注册和主从选择，当然对于web应用来说，nginx已经可以做到很好了。</p>
+<p>对于并行计算，我所了解的不多，相关的应用我只知道hadoop极其衍生的工具如spark等，所以我也就不去分析。</p>
+<p>根据我说说的这几点，对于一个应用来说，如果要给出它的集群方案，我们就应该从上述几点去分析，然后给出相应的对策即可。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/01/what-is-cluster/" data-id="cj89kt8xf000gin9eujh558mq" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/lgb-blog/2017/09/29/lerning-spring-4/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">Spring学习（4）</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/activeMq/">activeMq</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/dubbo/">dubbo</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/spring/">spring</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/zookeeper/">zookeeper</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/lgb-blog/tags/activeMq/" style="font-size: 16.67px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 13.33px;">dubbo</a> <a href="/lgb-blog/tags/jms/" style="font-size: 16.67px;">jms</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/01/what-is-cluster/">我所理解的集群</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/09/29/lerning-spring-4/">Spring学习（4）</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/09/28/lerning-spring-3/">spring学习（三）</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/09/28/lerning-spring-2/">spring学习（二）</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/09/27/lerning-spring-1/">学习spring-第一讲</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 刘国兵<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/lgb-blog/" class="mobile-nav-link">Home</a>
+  
+    <a href="/lgb-blog/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/lgb-blog/fancybox/jquery.fancybox.css">
+  <script src="/lgb-blog/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/lgb-blog/js/script.js"></script>
+
+  </div>
+</body>
+</html>
