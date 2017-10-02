@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>Hessian学习（一） | 刘国兵的博客</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="hessian的简单实用hessian是常用的rpc手段之一，它是基于Binary-RPC传输的一种webservice。 hessian底层是以http传送，在java上就是通过一个Servlet了，就是HessianServlet。我们先来看源码，只看init部分： 1234567891011121314151617181920212223242526272829303132333435363">
+<meta name="keywords" content="hessian,rpc">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hessian学习（一）">
+<meta property="og:url" content="http://liuguobing634.github.io/lgb-blog/2017/10/02/lerning-hessian-1/index.html">
+<meta property="og:site_name" content="刘国兵的博客">
+<meta property="og:description" content="hessian的简单实用hessian是常用的rpc手段之一，它是基于Binary-RPC传输的一种webservice。 hessian底层是以http传送，在java上就是通过一个Servlet了，就是HessianServlet。我们先来看源码，只看init部分： 1234567891011121314151617181920212223242526272829303132333435363">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2017-10-02T08:47:31.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Hessian学习（一）">
+<meta name="twitter:description" content="hessian的简单实用hessian是常用的rpc手段之一，它是基于Binary-RPC传输的一种webservice。 hessian底层是以http传送，在java上就是通过一个Servlet了，就是HessianServlet。我们先来看源码，只看init部分： 1234567891011121314151617181920212223242526272829303132333435363">
+  
+    <link rel="alternate" href="/atom.xml" title="刘国兵的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/lgb-blog/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/lgb-blog/" id="logo">刘国兵的博客</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/lgb-blog/" id="subtitle">技术无止境</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/lgb-blog/">Home</a>
+        
+          <a class="main-nav-link" href="/lgb-blog/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liuguobing634.github.io/lgb-blog"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-lerning-hessian-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lgb-blog/2017/10/02/lerning-hessian-1/" class="article-date">
+  <time datetime="2017-10-02T04:14:47.000Z" itemprop="datePublished">2017-10-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      Hessian学习（一）
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="hessian的简单实用"><a href="#hessian的简单实用" class="headerlink" title="hessian的简单实用"></a>hessian的简单实用</h2><p>hessian是常用的rpc手段之一，它是基于Binary-RPC传输的一种webservice。</p>
+<p>hessian底层是以http传送，在java上就是通过一个Servlet了，就是HessianServlet。我们先来看源码，只看init部分：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">HessianServlet</span> </span>&#123;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ServletConfig config)</span></span></div><div class="line"><span class="function">        <span class="keyword">throws</span> ServletException</span></div><div class="line"><span class="function">      </span>&#123;</div><div class="line">        <span class="keyword">super</span>.init(config);</div><div class="line">        </div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">          <span class="keyword">if</span> (_homeImpl != <span class="keyword">null</span>) &#123;</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"home-class"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"home-class"</span>);</div><div class="line">    </div><div class="line">            Class&lt;?&gt; homeClass = loadClass(className);</div><div class="line">    </div><div class="line">            _homeImpl = homeClass.newInstance();</div><div class="line">    </div><div class="line">            init(_homeImpl);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"service-class"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"service-class"</span>);</div><div class="line">    </div><div class="line">            Class&lt;?&gt; homeClass = loadClass(className);</div><div class="line">    </div><div class="line">            _homeImpl = homeClass.newInstance();</div><div class="line">    </div><div class="line">            init(_homeImpl);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> &#123;</div><div class="line">            <span class="keyword">if</span> (getClass().equals(HessianServlet.class))</div><div class="line">              <span class="keyword">throw</span> <span class="keyword">new</span> ServletException(<span class="string">"server must extend HessianServlet"</span>);</div><div class="line">    </div><div class="line">            _homeImpl = <span class="keyword">this</span>;</div><div class="line">          &#125;</div><div class="line">    </div><div class="line">          <span class="keyword">if</span> (_homeAPI != <span class="keyword">null</span>) &#123;</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"home-api"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"home-api"</span>);</div><div class="line">    </div><div class="line">            _homeAPI = loadClass(className);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"api-class"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"api-class"</span>);</div><div class="line">    </div><div class="line">            _homeAPI = loadClass(className);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (_homeImpl != <span class="keyword">null</span>) &#123;</div><div class="line">            _homeAPI = findRemoteAPI(_homeImpl.getClass());</div><div class="line">    </div><div class="line">            <span class="keyword">if</span> (_homeAPI == <span class="keyword">null</span>)</div><div class="line">              _homeAPI = _homeImpl.getClass();</div><div class="line">            </div><div class="line">            _homeAPI = _homeImpl.getClass();</div><div class="line">          &#125;</div><div class="line">          </div><div class="line">          <span class="keyword">if</span> (_objectImpl != <span class="keyword">null</span>) &#123;</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"object-class"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"object-class"</span>);</div><div class="line">    </div><div class="line">            Class&lt;?&gt; objectClass = loadClass(className);</div><div class="line">    </div><div class="line">            _objectImpl = objectClass.newInstance();</div><div class="line">    </div><div class="line">            init(_objectImpl);</div><div class="line">          &#125;</div><div class="line">    </div><div class="line">          <span class="keyword">if</span> (_objectAPI != <span class="keyword">null</span>) &#123;</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"object-api"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"object-api"</span>);</div><div class="line">    </div><div class="line">            _objectAPI = loadClass(className);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (_objectImpl != <span class="keyword">null</span>)</div><div class="line">            _objectAPI = _objectImpl.getClass();</div><div class="line">    </div><div class="line">          _homeSkeleton = <span class="keyword">new</span> HessianSkeleton(_homeImpl, _homeAPI);</div><div class="line">          </div><div class="line">          <span class="keyword">if</span> (_objectAPI != <span class="keyword">null</span>)</div><div class="line">            _homeSkeleton.setObjectClass(_objectAPI);</div><div class="line">    </div><div class="line">          <span class="keyword">if</span> (_objectImpl != <span class="keyword">null</span>) &#123;</div><div class="line">            _objectSkeleton = <span class="keyword">new</span> HessianSkeleton(_objectImpl, _objectAPI);</div><div class="line">            _objectSkeleton.setHomeClass(_homeAPI);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span></div><div class="line">            _objectSkeleton = _homeSkeleton;</div><div class="line">    </div><div class="line">          <span class="keyword">if</span> (<span class="string">"true"</span>.equals(getInitParameter(<span class="string">"debug"</span>))) &#123;</div><div class="line">          &#125;</div><div class="line">    </div><div class="line">          <span class="keyword">if</span> (<span class="string">"false"</span>.equals(getInitParameter(<span class="string">"send-collection-type"</span>)))</div><div class="line">            setSendCollectionType(<span class="keyword">false</span>);</div><div class="line">        &#125; <span class="keyword">catch</span> (ServletException e) &#123;</div><div class="line">          <span class="keyword">throw</span> e;</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> ServletException(e);</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>首先是判断home-class参数是否存在，存在的话就加载这个类并实例化，否则就判断service-class是否存在，逻辑跟前面一样，然后假如都不存在，那么就判断当前进入的servlet是不是此类本身，是的话就报错（因为必要的参数没有），否则就将本类当做接口的实现。</p>
+<p>这个信息告诉我们，使用hessian有两种方式，第一种是直接继承hessian，并实现rpc调用的接口，第二种就是直接使用hessian，但需要在参数中设置接口类和实现类（分别对应着home-class与home-api或者server-class与api-class）。</p>
+<p>我就根据这个信息写了两个server实现同样的功能。</p>
+<p>不过在写server之前，先看接口类，BasicService.class:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">BasicService</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function">String <span class="title">sayHello</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>然后两个server，第一个是BasicServiceImpl.class，普通的pojo</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BasicServiceImpl</span> <span class="keyword">implements</span> <span class="title">BasicService</span></span>&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">sayHello</span><span class="params">()</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"hello"</span>);</div><div class="line">        <span class="keyword">return</span> <span class="string">"hello"</span>;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>另一个是AnotherBasicServiceImpl.class,继承自HessianServlet:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@WebServlet</span>(urlPatterns = <span class="string">"/another"</span>)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AnotherBasicServiceImpl</span> <span class="keyword">extends</span> <span class="title">HessianServlet</span> <span class="keyword">implements</span> <span class="title">BasicService</span> </span>&#123;</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">sayHello</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="string">"mmb"</span>;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>看一下我们的web.xml:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8" ?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">web-app</span> <span class="attr">xmlns</span>=<span class="string">"http://xmlns.jcp.org/xml/ns/javaee"</span></span></div><div class="line"><span class="tag">         <span class="attr">xmlns:xsl</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></div><div class="line"><span class="tag">         <span class="attr">xsl:schemaLocation</span>=<span class="string">"http://xmlns.jcp.org/xml/ns/javaee</span></span></div><div class="line"><span class="tag"><span class="string">            http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"</span></span></div><div class="line"><span class="tag">         <span class="attr">version</span>=<span class="string">"3.1"</span></span></div><div class="line"><span class="tag">         <span class="attr">metadata-complete</span>=<span class="string">"false"</span>&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">servlet</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>Hessian<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">servlet-class</span>&gt;</span>com.caucho.hessian.server.HessianServlet<span class="tag">&lt;/<span class="name">servlet-class</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">init-param</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">param-name</span>&gt;</span>home-class<span class="tag">&lt;/<span class="name">param-name</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">param-value</span>&gt;</span>lew.bing.hessian.server.BasicServiceImpl<span class="tag">&lt;/<span class="name">param-value</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">init-param</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">init-param</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">param-name</span>&gt;</span>home-api<span class="tag">&lt;/<span class="name">param-name</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">param-value</span>&gt;</span>lew.bing.hessian.service.BasicService<span class="tag">&lt;/<span class="name">param-value</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">init-param</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">servlet</span>&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">servlet-mapping</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>Hessian<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/hessian<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">servlet-mapping</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;/<span class="name">web-app</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>因为我开启了servlet3.1的注解功能，所以这里只配置一个Servlet，另一个看上面的AnotherBasicServiceImpl的@WebServlet部分。</p>
+<p>我再把client写上，client部分就很简单了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BasicServiceClient</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> MalformedURLException </span>&#123;</div><div class="line">        HessianProxyFactory factory = <span class="keyword">new</span> HessianProxyFactory();</div><div class="line">        BasicService o = (BasicService)factory.create(BasicService.class, <span class="string">"http://localhost:8484/hessian"</span>);</div><div class="line">        System.out.println(o.sayHello());</div><div class="line">        o = (BasicService) factory.create(BasicService.class,<span class="string">"http://localhost:8484/another"</span>);</div><div class="line">        System.out.println(o.sayHello());</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>测试成功，简单的使用就这样完成了。我个人比较推荐使用第二种继承HessianServlet的方式，因为这样如果是servlet3.0以上的话，就不用一直在xml文件写映射了。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/02/lerning-hessian-1/" data-id="cj89xmv3i0001oa9ewyiizrid" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/lgb-blog/2017/10/01/what-is-cluster/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">我所理解的集群</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/activeMq/">activeMq</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/dubbo/">dubbo</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/spring/">spring</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/zookeeper/">zookeeper</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/lgb-blog/tags/activeMq/" style="font-size: 16.67px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 13.33px;">dubbo</a> <a href="/lgb-blog/tags/hessian/" style="font-size: 10px;">hessian</a> <a href="/lgb-blog/tags/jms/" style="font-size: 16.67px;">jms</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/rpc/" style="font-size: 10px;">rpc</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/02/lerning-hessian-1/">Hessian学习（一）</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/01/what-is-cluster/">我所理解的集群</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/09/29/lerning-spring-4/">Spring学习（4）</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/09/28/lerning-spring-3/">spring学习（三）</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/09/28/lerning-spring-2/">spring学习（二）</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 刘国兵<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/lgb-blog/" class="mobile-nav-link">Home</a>
+  
+    <a href="/lgb-blog/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/lgb-blog/fancybox/jquery.fancybox.css">
+  <script src="/lgb-blog/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/lgb-blog/js/script.js"></script>
+
+  </div>
+</body>
+</html>
