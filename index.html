@@ -56,9 +56,9 @@
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liuguobing634.github.io/lgb-blog"></form>
@@ -68,6 +68,58 @@
 </header>
       <div class="outer">
         <section id="main">
+  
+    <article id="post-lerning-hessian-2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lgb-blog/2017/10/02/lerning-hessian-2/" class="article-date">
+  <time datetime="2017-10-02T10:11:58.000Z" itemprop="datePublished">2017-10-02</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/lgb-blog/categories/spring/">spring</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/lgb-blog/2017/10/02/lerning-hessian-2/">Hessian学习（二）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Hessian与spring的结合"><a href="#Hessian与spring的结合" class="headerlink" title="Hessian与spring的结合"></a>Hessian与spring的结合</h2><p>其实这篇文章主要讲spring的remoting，顺便使用了hessian而已。</p>
+<p>spring在很早的时候就提供了remoting功能，它在包spring-web下，它提供了五种实现，第一是Hessian，第二是Burlap，第三是http-invoke,第四是jax-ws，第五种是rmi，hessian现在不多说，burlap跟hessian是同一家公司的，现在spring将之注解为过时，http-invoke是spring自己提供的rpc，jax-ws是j2ee关于webservice的规范。</p>
+<p>这些remoting在spring中用起来大同小异，这里就医Hessian为例。</p>
+<p>先看服务端配置，spring-servlet.xml</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">name</span>=<span class="string">"/remoting/hessian"</span> <span class="attr">class</span>=<span class="string">"org.springframework.remoting.caucho.HessianServiceExporter"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"serviceInterface"</span> <span class="attr">value</span>=<span class="string">"lew.bing.spring.service.UserService"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"service"</span> <span class="attr">ref</span>=<span class="string">"userServiceImpl"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>服务端就这么简单，通过写这个bean就能把接口暴露出去，这里的name在前面加上spring mvc的dispatch配的url就是hessian的url。如果对于不是以spring mvc作为控制层的项目来说，也可以在根配置中配（如果使用annotation以及类配置的话，大家可以自行的去转换）。然后需要在web.xml中写上servlet及其mapping，其中servlet部分的类是org.springframework.web.context.support.HttpRequestHandlerServlet，名字是bean的名字，映射的url则是remoting的url。</p>
+<p>对于hessian，spring也提供可客户端方的使用，给个例子吧（spring文档中的例子，我本人并没有写相关的案例）</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">class</span>=<span class="string">"example.SimpleObject"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"accountService"</span> <span class="attr">ref</span>=<span class="string">"accountService"</span>/&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"accountService"</span> <span class="attr">class</span>=<span class="string">"org.springframework.remoting.caucho.HessianProxyFactoryBean"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"serviceUrl"</span> <span class="attr">value</span>=<span class="string">"http://remotehost:8080/remoting/AccountService"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"serviceInterface"</span> <span class="attr">value</span>=<span class="string">"example.AccountService"</span>/&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>用起来还是很简单的，换做其他的rpc，大致也是如此使用，当然因为其他的rpc不一定是基于http协议，有些配置还是需要改变的，不去细讲。</p>
+<p>我个人总结认为，hessian对比dubbo，还是太低级了，它仅仅提供rpc的功能，但是像服务注册与发现、集群与负载均衡等都没有，要自己手动去完成，dubbo也提供了hessian的协议，hessian的优势在于是跨语言的。接下来我将去学习spring cloud这一个比dubbo更完善的rpc框架。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/02/lerning-hessian-2/" data-id="cj8a2gljh0005669epi800s5g" class="article-share-link">Partager</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
   
     <article id="post-lerning-hessian-1" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
@@ -113,7 +165,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/02/lerning-hessian-1/" data-id="cj89xmv3i0001oa9ewyiizrid" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/02/lerning-hessian-1/" data-id="cj8a2gljs000b669efi30pq3a" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li></ul>
@@ -156,7 +208,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/01/what-is-cluster/" data-id="cj89xmv4p000joa9e1feilv7z" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/01/what-is-cluster/" data-id="cj8a2glkf000k669eeztayd3u" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li></ul>
@@ -230,7 +282,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/29/lerning-spring-4/" data-id="cj89xmv53000ooa9e0sldjx3t" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/29/lerning-spring-4/" data-id="cj8a2glkh000m669e2bcby9oc" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li></ul>
@@ -323,7 +375,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-3/" data-id="cj89xmv50000koa9e6k0ef1wg" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-3/" data-id="cj8a2glk2000g669eycvdst9m" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
@@ -400,7 +452,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-2/" data-id="cj89xmv4i000goa9enci2n6f6" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-2/" data-id="cj8a2glk0000f669e1wpnv0xa" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
@@ -475,7 +527,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/27/lerning-spring-1/" data-id="cj89xmv4f000foa9e690acjri" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/27/lerning-spring-1/" data-id="cj8a2gljp000a669er8tcxu18" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
@@ -570,7 +622,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/26/dubbo-testing-1/" data-id="cj89xmv3c0000oa9en9m96eno" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/26/dubbo-testing-1/" data-id="cj8a2glj30000669eyk6rq4q5" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li></ul>
@@ -636,7 +688,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/25/zookeeper-testing-2/" data-id="cj89xmv58000voa9epgdz102a" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/25/zookeeper-testing-2/" data-id="cj8a2gllc001v669e7edq7s90" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li></ul>
@@ -695,81 +747,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/24/zookeeper-testing-1/" data-id="cj89xmv55000qoa9eajwa9txx" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/24/zookeeper-testing-1/" data-id="cj8a2glle001w669esuizi7yy" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-how-to-use-activeMq-3" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/lgb-blog/2017/09/22/how-to-use-activeMq-3/" class="article-date">
-  <time datetime="2017-09-22T06:56:00.000Z" itemprop="datePublished">2017-09-22</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/lgb-blog/categories/activeMq/">activeMq</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/lgb-blog/2017/09/22/how-to-use-activeMq-3/">使用activeMq(三)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="JMS消息持久化与事务机制"><a href="#JMS消息持久化与事务机制" class="headerlink" title="JMS消息持久化与事务机制"></a>JMS消息持久化与事务机制</h2><p>本文有两部分，一部分讲述jms的消息持久化，另一部分讲解事务机制。</p>
-<h3 id="1-JMS持久化"><a href="#1-JMS持久化" class="headerlink" title="1.JMS持久化"></a>1.JMS持久化</h3><p>JMS持久化其实有两类，一类是传输持久化，一类是订阅持久化，其实不难理解，前者是应对服务器broker的，后者是应对消息订阅者的。</p>
-<p>首先来看传输持久化与非持久化。</p>
-<h4 id="1-1-JMS传输的持久化与非持久化"><a href="#1-1-JMS传输的持久化与非持久化" class="headerlink" title="1.1 JMS传输的持久化与非持久化"></a>1.1 JMS传输的持久化与非持久化</h4><p>消息传输非持久化是指发送消息时直接将消息发送到订阅者那里，而不需要保存下来，持久化则先保存下来然后再发送到订阅者。当broker宕机重启时，会将持久化未发送的消息重新发送到订阅者那，而未持久化的消息则无法传送了。</p>
-<p>在producer中设置DeliverMode时配置此选项，默认是持久化传输的(activemq测试是如此，其余的消息队列不清楚)。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">producer = session.createProducer(destination);</div><div class="line">producer.setDeliveryMode(DeliveryMode.PERSISTENT); // 持久化</div><div class="line">// producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT); // 非持久化</div></pre></td></tr></table></figure>
-<p>大家可以测试一下，在activemq重启后，持久化的会继续收到，而非持久化的则无法收到</p>
-<h4 id="1-2-JMS订阅的持久化与非持久化"><a href="#1-2-JMS订阅的持久化与非持久化" class="headerlink" title="1.2 JMS订阅的持久化与非持久化"></a>1.2 JMS订阅的持久化与非持久化</h4><p>首先，这个只针对pub/sub方式，p2p与此无关，因为p2p是消费了就删除，没消费就留着，所以本身不需要持久化订阅。</p>
-<p>pub/sub模式因为一个主题可以被多个订阅者订阅，某些订阅者也可能因为中途宕机而错过消息，而消息队列不可能因为其中一两个订阅者的消失后重现而重新发送消息给所有订阅者，所以针对此情况，就需要把这些订阅者的相关信息保存起来。</p>
-<p>这个操作因为与生产者无关，所以只在消费者那里有变化.</p>
-<p>首先消息队列要识别订阅者和订阅的消息，所以有两处改变，首先是要给订阅者的connection设置一个clientId。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">connection.setClientID(&quot;consumers-&quot;+Thread.currentThread().getName());</div></pre></td></tr></table></figure>
-<p>注意这里的id只能唯一，第二个同样的id加进来则报错。</p>
-<p>其次持久化订阅的consumer也要与非持久化区分</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">consumer = session.createDurableSubscriber((Topic) destination, &quot;aaa&quot;); // 持久化订阅</div><div class="line">// consumer = session.createConsumer(destination); //非持久化订阅</div></pre></td></tr></table></figure>
-<p>当使用持久化订阅时，如果生产者持续生成消息，而订阅者中途离开又回来，那么中间错过的消息可以补偿得到。</p>
-<p>我写了给代码做了测试.</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConsumerTest</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line"></div><div class="line">        Consumer consumer1 = <span class="keyword">new</span> Consumer();</div><div class="line">        Consumer consumer2 = <span class="keyword">new</span> Consumer();</div><div class="line">        Consumer consumer3 = <span class="keyword">new</span> Consumer();</div><div class="line"></div><div class="line">        Thread thread = <span class="keyword">new</span> Thread(<span class="keyword">new</span> ConsumerRun(consumer1),<span class="string">"thread1"</span>);</div><div class="line">        thread.start();</div><div class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> ConsumerRun(consumer2)).start();</div><div class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> ConsumerRun(consumer3)).start();</div><div class="line"></div><div class="line">        Thread.sleep(<span class="number">30000</span>);</div><div class="line">        System.out.println(<span class="string">"客户端1关闭"</span>);</div><div class="line">        consumer1.close(); <span class="comment">// 会出现bug</span></div><div class="line">        thread.interrupt();</div><div class="line">        Thread.sleep(<span class="number">1000</span>);</div><div class="line">        System.out.println(<span class="string">"客户端1重启"</span>);</div><div class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> ConsumerRun(consumer1),<span class="string">"thread1"</span>).start();</div><div class="line"></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ConsumerRun</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</div><div class="line"></div><div class="line">        <span class="keyword">private</span> Consumer consumer;</div><div class="line"></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="title">ConsumerRun</span><span class="params">(Consumer consumer)</span> </span>&#123;</div><div class="line">            <span class="keyword">this</span>.consumer = consumer;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            consumer.init();</div><div class="line">            consumer.getMessage(<span class="string">"test"</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>由于我不知道这里如何放置图片，测试的效果就不给大家了。总结一下，就是大概30秒后客户端1退出，然后1秒后，客户端1又启动，会发现它与别的客户端之间的数字相差1.</p>
-<p>JMS的持久化介绍就到这里结束，下面介绍JMS的事务。</p>
-<h3 id="2-JMS的事务机制"><a href="#2-JMS的事务机制" class="headerlink" title="2.JMS的事务机制"></a>2.JMS的事务机制</h3><p>大家对数据库的事务应该都很了解，jms的事务与之类似，有了事务机制能够保证jms的可靠性。当然持久化也是为了保证jms的可靠性。</p>
-<p>持久化消息可以让宕机重启情况保证消息依然能够收到，而事务则是在业务逻辑出现bug时消息能够回滚，从而时之后bug修复后能够收到该消息。</p>
-<p>这里写一下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">while (true) &#123;</div><div class="line">                Thread.sleep(1000);</div><div class="line">                try &#123;</div><div class="line">                    TextMessage message = (TextMessage) consumer.receive();</div><div class="line">                    if (message != null) &#123;</div><div class="line">                        message.acknowledge();</div><div class="line">                        System.out.println(Thread.currentThread().getName()+&quot;: Consumer:我是消费者，我正在消费Msg&quot;+message.getText()+&quot;---&gt;&quot;+count.getAndIncrement());</div><div class="line">                    &#125;</div><div class="line">                    if (count.get() == a) &#123;</div><div class="line">                        throw new RuntimeException(Thread.currentThread().getName() + &quot;:有错误啦&quot;);</div><div class="line">                    &#125;</div><div class="line">                    session.commit();</div><div class="line">                &#125; catch (RuntimeException e) &#123;</div><div class="line">                    e.printStackTrace();</div><div class="line">                    session.rollback();</div><div class="line">                &#125;</div><div class="line"></div><div class="line">            &#125;</div></pre></td></tr></table></figure>
-<p>这是将第一讲中的消费者while(true)部分修改的，经过测试后，当某个线程出现错误，然后下一轮循环它的count是比别的要少的，这是因为事务回滚它重新消费。</p>
-<p>我在谈一下这里的session，有心人应该注意到我的第一讲中session并没有commit，这是错误的，如果不commit，代表它并没有被消费.</p>
-<p>在client的session创建时方法connection.createSession()，有两个参数，后一个参数指定session的模式，分别是：<br>Session.AUTO_ACKNOWLEDGE为自动确认，客户端发送和接收消息不需要做额外的工作。<br>Session.CLIENT_ACKNOWLEDGE为客户端确认。客户端接收到消息后，必须调用javax.jms.Message的acknowledge方法。jms服务器才会删除消息。<br>DUPS_OK_ACKNOWLEDGE允许副本的确认模式。一旦接收方应用程序的方法调用从处理消息处返回，会话对象就会确认消息的接收；而且允许重复确认。在需要考虑资源使用时，这种模式非常有效。</p>
-<p>但在第一个参数为true时以上都可以被忽略。session模式被指定为SESSION_TRANSACTED。</p>
-<h3 id="3-总结"><a href="#3-总结" class="headerlink" title="3.总结"></a>3.总结</h3><p>JMS的持久化和事务机制基本上能够保证JMS的可靠性。持久化解决了宕机的情况，而事务则是出现bug的时候或者某些特殊情况。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/22/how-to-use-activeMq-3/" data-id="cj89xmv4e000eoa9erv8elcdb" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li></ul>
 
     </footer>
   </div>
@@ -789,7 +770,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Categories</h3>
+    <h3 class="widget-title">Catégories</h3>
     <div class="widget">
       <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/activeMq/">activeMq</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/dubbo/">dubbo</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/spring/">spring</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/zookeeper/">zookeeper</a></li></ul>
     </div>
@@ -799,7 +780,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
+    <h3 class="widget-title">Mot-clés</h3>
     <div class="widget">
       <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li></ul>
     </div>
@@ -809,9 +790,9 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
+    <h3 class="widget-title">Nuage de mot-clés</h3>
     <div class="widget tagcloud">
-      <a href="/lgb-blog/tags/activeMq/" style="font-size: 16.67px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 13.33px;">dubbo</a> <a href="/lgb-blog/tags/hessian/" style="font-size: 10px;">hessian</a> <a href="/lgb-blog/tags/jms/" style="font-size: 16.67px;">jms</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/rpc/" style="font-size: 10px;">rpc</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a>
+      <a href="/lgb-blog/tags/activeMq/" style="font-size: 16.67px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 13.33px;">dubbo</a> <a href="/lgb-blog/tags/hessian/" style="font-size: 13.33px;">hessian</a> <a href="/lgb-blog/tags/jms/" style="font-size: 16.67px;">jms</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/rpc/" style="font-size: 10px;">rpc</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a>
     </div>
   </div>
 
@@ -828,9 +809,13 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">Articles récents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/02/lerning-hessian-2/">Hessian学习（二）</a>
+          </li>
         
           <li>
             <a href="/lgb-blog/2017/10/02/lerning-hessian-1/">Hessian学习（一）</a>
@@ -848,10 +833,6 @@
             <a href="/lgb-blog/2017/09/28/lerning-spring-3/">spring学习（三）</a>
           </li>
         
-          <li>
-            <a href="/lgb-blog/2017/09/28/lerning-spring-2/">spring学习（二）</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -865,7 +846,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 刘国兵<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
