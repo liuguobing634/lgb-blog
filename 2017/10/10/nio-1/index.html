@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>nio-1 | 刘国兵的博客</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="使用java的NIO打造一个时间服务器java1.4提供了nio，即非阻塞IO，与传统BIO相对。 NIO虽然是非阻塞，看起来很不错，可是用起来却是很复杂，今天我就用NIO打造一个简单的时间服务器。 先放上源代码: 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505">
+<meta name="keywords" content="Nio">
+<meta property="og:type" content="article">
+<meta property="og:title" content="nio-1">
+<meta property="og:url" content="http://liuguobing634.github.io/lgb-blog/2017/10/10/nio-1/index.html">
+<meta property="og:site_name" content="刘国兵的博客">
+<meta property="og:description" content="使用java的NIO打造一个时间服务器java1.4提供了nio，即非阻塞IO，与传统BIO相对。 NIO虽然是非阻塞，看起来很不错，可是用起来却是很复杂，今天我就用NIO打造一个简单的时间服务器。 先放上源代码: 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2017-10-10T00:20:47.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="nio-1">
+<meta name="twitter:description" content="使用java的NIO打造一个时间服务器java1.4提供了nio，即非阻塞IO，与传统BIO相对。 NIO虽然是非阻塞，看起来很不错，可是用起来却是很复杂，今天我就用NIO打造一个简单的时间服务器。 先放上源代码: 12345678910111213141516171819202122232425262728293031323334353637383940414243444546474849505">
+  
+    <link rel="alternate" href="/atom.xml" title="刘国兵的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/lgb-blog/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/lgb-blog/" id="logo">刘国兵的博客</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/lgb-blog/" id="subtitle">技术无止境</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/lgb-blog/">Home</a>
+        
+          <a class="main-nav-link" href="/lgb-blog/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liuguobing634.github.io/lgb-blog"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-nio-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lgb-blog/2017/10/10/nio-1/" class="article-date">
+  <time datetime="2017-10-09T23:23:56.000Z" itemprop="datePublished">2017-10-10</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      nio-1
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="使用java的NIO打造一个时间服务器"><a href="#使用java的NIO打造一个时间服务器" class="headerlink" title="使用java的NIO打造一个时间服务器"></a>使用java的NIO打造一个时间服务器</h2><p>java1.4提供了nio，即非阻塞IO，与传统BIO相对。</p>
+<p>NIO虽然是非阻塞，看起来很不错，可是用起来却是很复杂，今天我就用NIO打造一个简单的时间服务器。</p>
+<p>先放上源代码:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MultiplexerTimeServer</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> Selector selector;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> ServerSocketChannel servChannel;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">volatile</span> <span class="keyword">boolean</span> stop;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">MultiplexerTimeServer</span><span class="params">(<span class="keyword">int</span> port)</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            selector = Selector.open();</div><div class="line">            servChannel = ServerSocketChannel.open();</div><div class="line">            <span class="comment">//非阻塞</span></div><div class="line">            servChannel.configureBlocking(<span class="keyword">false</span>);</div><div class="line">            <span class="comment">//绑定地址</span></div><div class="line">            servChannel.socket().bind(<span class="keyword">new</span> InetSocketAddress(port),<span class="number">1024</span>);</div><div class="line">            <span class="comment">// 注册多路选择器，让它可以接受消息</span></div><div class="line">            servChannel.register(selector, SelectionKey.OP_ACCEPT);</div><div class="line"></div><div class="line">        &#125;<span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">            System.exit(<span class="number">1</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">while</span> (!stop) &#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                selector.select(<span class="number">1000</span>);</div><div class="line">                Set&lt;SelectionKey&gt; selectionKeys = selector.selectedKeys();</div><div class="line">                Iterator&lt;SelectionKey&gt; it = selectionKeys.iterator();</div><div class="line">                SelectionKey key = <span class="keyword">null</span>;</div><div class="line">                <span class="keyword">while</span> (it.hasNext()) &#123;</div><div class="line">                    key = it.next();</div><div class="line">                    it.remove();</div><div class="line">                    <span class="keyword">try</span> &#123;</div><div class="line">                        handleInput(key);</div><div class="line">                    &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">                        key.cancel();</div><div class="line">                        <span class="keyword">if</span> (key.channel() != <span class="keyword">null</span>) &#123;</div><div class="line">                            key.channel().close();</div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125; <span class="keyword">catch</span> (Throwable t) &#123;</div><div class="line">                t.printStackTrace();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="comment">// 关闭多路复用器</span></div><div class="line">        <span class="keyword">if</span> (selector != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                selector.close();</div><div class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</div><div class="line">                e.printStackTrace();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">stop</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.stop = <span class="keyword">true</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">handleInput</span><span class="params">(SelectionKey key)</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">        <span class="keyword">if</span> (key.isValid()) &#123;</div><div class="line">            <span class="keyword">if</span> (key.isAcceptable()) &#123;</div><div class="line">                ServerSocketChannel ssc = (ServerSocketChannel) key.channel();</div><div class="line">                SocketChannel sc = ssc.accept();</div><div class="line">                sc.configureBlocking(<span class="keyword">false</span>);</div><div class="line">                <span class="comment">// 注册多路选择器，让sc能够读取它</span></div><div class="line">                sc.register(selector,SelectionKey.OP_READ);</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (key.isReadable()) &#123;</div><div class="line">                SocketChannel sc = (SocketChannel) key.channel();</div><div class="line">                <span class="comment">// 创建ByteBuffer用来接受管道的数据</span></div><div class="line">                ByteBuffer readBuffer = ByteBuffer.allocate(<span class="number">1024</span>);</div><div class="line">                <span class="keyword">int</span> readBytes = sc.read(readBuffer);</div><div class="line">                <span class="keyword">if</span> (readBytes &gt; <span class="number">0</span> ) &#123;</div><div class="line">                    <span class="comment">// 写入操作</span></div><div class="line">                    readBuffer.flip();</div><div class="line">                    <span class="keyword">byte</span>[] bytes = <span class="keyword">new</span> <span class="keyword">byte</span>[readBuffer.remaining()];</div><div class="line">                    readBuffer.get(bytes);</div><div class="line">                    String body = <span class="keyword">new</span> String(bytes,<span class="string">"UTF-8"</span>);</div><div class="line">                    System.out.println(<span class="string">"The time server receive order : "</span> + body);</div><div class="line">                    String currentTime = <span class="string">"QUERY TIME ORDER"</span>.equalsIgnoreCase(body) ?</div><div class="line">                            <span class="keyword">new</span> java.util.Date(System.currentTimeMillis()).toString() : <span class="string">"BAD REQUEST"</span>;</div><div class="line">                    doWrite(sc,currentTime);</div><div class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (readBytes &lt; <span class="number">0</span>) &#123;</div><div class="line">                    key.cancel();</div><div class="line">                    sc.close();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doWrite</span><span class="params">(SocketChannel channel,String response)</span> <span class="keyword">throws</span> IOException</span>&#123;</div><div class="line">        <span class="keyword">if</span> (response != <span class="keyword">null</span> &amp;&amp; response.trim().length() &gt; <span class="number">0</span>) &#123;</div><div class="line">            <span class="keyword">byte</span>[] bytes = response.getBytes();</div><div class="line">            ByteBuffer writeBuffer = ByteBuffer.allocate(bytes.length);</div><div class="line">            writeBuffer.put(bytes);</div><div class="line">            writeBuffer.flip();</div><div class="line">            channel.write(writeBuffer);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>先来看构造方法部分：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">public</span> <span class="title">MultiplexerTimeServer</span><span class="params">(<span class="keyword">int</span> port)</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            selector = Selector.open();</div><div class="line">            servChannel = ServerSocketChannel.open();</div><div class="line">            <span class="comment">//非阻塞</span></div><div class="line">            servChannel.configureBlocking(<span class="keyword">false</span>);</div><div class="line">            <span class="comment">//绑定地址</span></div><div class="line">            servChannel.socket().bind(<span class="keyword">new</span> InetSocketAddress(port),<span class="number">1024</span>);</div><div class="line">            <span class="comment">// 注册多路选择器，让它可以接受消息</span></div><div class="line">            servChannel.register(selector, SelectionKey.OP_ACCEPT);</div><div class="line"></div><div class="line">        &#125;<span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">            System.exit(<span class="number">1</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>首先是创建一个选择器，然后打开ServerSocketChannel通道，并将通道设置成非阻塞状态，然后将通道注册到多路选择器中，最后绑定接口。</p>
+<p>我来一一讲解这些名词概念。</p>
+<h3 id="1-选择器Selector"><a href="#1-选择器Selector" class="headerlink" title="1 选择器Selector"></a>1 选择器Selector</h3><p>Selector选择器类管理着一个被注册的通道集合的信息和它们的就绪状态。通道是和选择器一起被注册的，并且使用选择器来更新通道的就绪状态。当这么做的时候，可以选择将被激发的线程挂起，直到有就绪的的通道。</p>
+<p>Selector可以单线程处理多通道，这样做的好处是不需要频繁的切换线程。</p>
+<h3 id="2-通道channel"><a href="#2-通道channel" class="headerlink" title="2 通道channel"></a>2 通道channel</h3><p>Channel类似于流，不一样的是它是双向的，而流式单向的，其次它可以异步的读写，读写数据都通过缓冲区。</p>
+<p>SocketChannel顾名思义就是Socket相关的通道，而socket都有两类，客户端和服务端，这里是服务端的,socketChannel可以设置成非阻塞模式（FileChannel则不行）。</p>
+<p>要想让Selector来管理channel，则需要将后者注册到前者上，并且后者要是非阻塞形态。</p>
+<p>构造方法部分就讲完了。</p>
+<p>实现了Runnable，自然要看run方法了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">while</span> (!stop) &#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                selector.select(<span class="number">1000</span>);</div><div class="line">                Set&lt;SelectionKey&gt; selectionKeys = selector.selectedKeys();</div><div class="line">                Iterator&lt;SelectionKey&gt; it = selectionKeys.iterator();</div><div class="line">                SelectionKey key = <span class="keyword">null</span>;</div><div class="line">                <span class="keyword">while</span> (it.hasNext()) &#123;</div><div class="line">                    key = it.next();</div><div class="line">                    it.remove();</div><div class="line">                    <span class="keyword">try</span> &#123;</div><div class="line">                        handleInput(key);</div><div class="line">                    &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">                        key.cancel();</div><div class="line">                        <span class="keyword">if</span> (key.channel() != <span class="keyword">null</span>) &#123;</div><div class="line">                            key.channel().close();</div><div class="line">                        &#125;</div><div class="line">                    &#125;</div><div class="line">                &#125;</div><div class="line">            &#125; <span class="keyword">catch</span> (Throwable t) &#123;</div><div class="line">                t.printStackTrace();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="comment">// 关闭多路复用器</span></div><div class="line">        <span class="keyword">if</span> (selector != <span class="keyword">null</span>) &#123;</div><div class="line">            <span class="keyword">try</span> &#123;</div><div class="line">                selector.close();</div><div class="line">            &#125; <span class="keyword">catch</span> (IOException e) &#123;</div><div class="line">                e.printStackTrace();</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>在一个循环中，每隔1s中就从选择器寻找SelectionKey的集合，SelectionKey是register（）方法的返回对象，这个对象有很多属性和方法能够方便的操作和得到channel和selector。</p>
+<p>selector的selectKeys方法可以访问“已选择键集（selected key set）”中的就绪通道。这里先得到这个已选择键集，然后依次使用它们，并且从这个键集中移除，因为Selector不会自己移除SelectionKey实例。等到下一次该通道又可用时，它会重新回到这个键集中的。</p>
+<p>这里的主要处理代码在handleInput(key)方法中，先来看看代码:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">handleInput</span><span class="params">(SelectionKey key)</span> <span class="keyword">throws</span> IOException </span>&#123;</div><div class="line">        <span class="keyword">if</span> (key.isValid()) &#123;</div><div class="line">            <span class="keyword">if</span> (key.isAcceptable()) &#123;</div><div class="line">                ServerSocketChannel ssc = (ServerSocketChannel) key.channel();</div><div class="line">                SocketChannel sc = ssc.accept();</div><div class="line">                sc.configureBlocking(<span class="keyword">false</span>);</div><div class="line">                <span class="comment">// 注册多路选择器，让sc能够读取它</span></div><div class="line">                sc.register(selector,SelectionKey.OP_READ);</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (key.isReadable()) &#123;</div><div class="line">                SocketChannel sc = (SocketChannel) key.channel();</div><div class="line">                <span class="comment">// 创建ByteBuffer用来接受管道的数据</span></div><div class="line">                ByteBuffer readBuffer = ByteBuffer.allocate(<span class="number">1024</span>);</div><div class="line">                <span class="keyword">int</span> readBytes = sc.read(readBuffer);</div><div class="line">                <span class="keyword">if</span> (readBytes &gt; <span class="number">0</span> ) &#123;</div><div class="line">                    <span class="comment">// 写入操作</span></div><div class="line">                    readBuffer.flip();</div><div class="line">                    <span class="keyword">byte</span>[] bytes = <span class="keyword">new</span> <span class="keyword">byte</span>[readBuffer.remaining()];</div><div class="line">                    readBuffer.get(bytes);</div><div class="line">                    String body = <span class="keyword">new</span> String(bytes,<span class="string">"UTF-8"</span>);</div><div class="line">                    System.out.println(<span class="string">"The time server receive order : "</span> + body);</div><div class="line">                    String currentTime = <span class="string">"QUERY TIME ORDER"</span>.equalsIgnoreCase(body) ?</div><div class="line">                            <span class="keyword">new</span> java.util.Date(System.currentTimeMillis()).toString() : <span class="string">"BAD REQUEST"</span>;</div><div class="line">                    doWrite(sc,currentTime);</div><div class="line">                &#125; <span class="keyword">else</span> <span class="keyword">if</span> (readBytes &lt; <span class="number">0</span>) &#123;</div><div class="line">                    key.cancel();</div><div class="line">                    sc.close();</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>先做个判断看key是什么状态，如果是可接受的(Acceptable),则将其通道重新注册到selector中，如果是可读，则去读取，读取的时候通过ByteBuffer，并将时间信息写入到这个通道，写入的方法如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="function"><span class="keyword">private</span> <span class="keyword">void</span> <span class="title">doWrite</span><span class="params">(SocketChannel channel,String response)</span> <span class="keyword">throws</span> IOException</span>&#123;</div><div class="line">        <span class="keyword">if</span> (response != <span class="keyword">null</span> &amp;&amp; response.trim().length() &gt; <span class="number">0</span>) &#123;</div><div class="line">            <span class="keyword">byte</span>[] bytes = response.getBytes();</div><div class="line">            ByteBuffer writeBuffer = ByteBuffer.allocate(bytes.length);</div><div class="line">            writeBuffer.put(bytes);</div><div class="line">            writeBuffer.flip();</div><div class="line">            channel.write(writeBuffer);</div><div class="line">        &#125;</div><div class="line">    &#125;</div></pre></td></tr></table></figure>
+<p>写入代码挺简单的，就是先创建ByteBuffer，然后将其传入到channel中。</p>
+<p>这样，一个时间服务器就完成了.</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/10/nio-1/" data-id="cj8kv1x6u000h789e90svwdrp" class="article-share-link">Partager</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/Nio/">Nio</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/lgb-blog/2017/10/03/lerning-spring-5/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ancien</strong>
+      <div class="article-nav-title">spring学习（五）</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Catégories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/activeMq/">activeMq</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/dubbo/">dubbo</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/spring/">spring</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/zookeeper/">zookeeper</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Mot-clés</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/Nio/">Nio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-cloud/">spring cloud</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Nuage de mot-clés</h3>
+    <div class="widget tagcloud">
+      <a href="/lgb-blog/tags/Nio/" style="font-size: 10px;">Nio</a> <a href="/lgb-blog/tags/activeMq/" style="font-size: 16.67px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 13.33px;">dubbo</a> <a href="/lgb-blog/tags/hessian/" style="font-size: 13.33px;">hessian</a> <a href="/lgb-blog/tags/jms/" style="font-size: 16.67px;">jms</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/rpc/" style="font-size: 10px;">rpc</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-cloud/" style="font-size: 10px;">spring cloud</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Articles récents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/10/nio-1/">nio-1</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/03/lerning-spring-5/">spring学习（五）</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/02/lerning-hessian-2/">Hessian学习（二）</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/02/lerning-hessian-1/">Hessian学习（一）</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/01/what-is-cluster/">我所理解的集群</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 刘国兵<br>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/lgb-blog/" class="mobile-nav-link">Home</a>
+  
+    <a href="/lgb-blog/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/lgb-blog/fancybox/jquery.fancybox.css">
+  <script src="/lgb-blog/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/lgb-blog/js/script.js"></script>
+
+  </div>
+</body>
+</html>

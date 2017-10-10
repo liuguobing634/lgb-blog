@@ -3,20 +3,18 @@
 <head>
   <meta charset="utf-8">
   
-  <title>我所理解的集群 | 刘国兵的博客</title>
+  <title>Mot-clé: Nio | 刘国兵的博客</title>
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <meta name="description" content="集群的简介集群，我给的定义是：分布式是对外部变现为单一的系统，对内部则是有一组服务和资源组成的系统，能够提供负载均衡、并行计算和高可用性。 那我根据这个定义来看，首先是要对外部是单一的系统，假设系统是web服务，那么对于任何同样的请求，应该得到的同样的响应，我们为了能够达到负载均衡的目的，往往就将同样的服务部署到多台机器或者在一台机器启动多个，所以对于这样的一个条件，则会衍生出一个问题，那就是这些">
-<meta name="keywords" content="cluster">
-<meta property="og:type" content="article">
-<meta property="og:title" content="我所理解的集群">
-<meta property="og:url" content="http://liuguobing634.github.io/lgb-blog/2017/10/01/what-is-cluster/index.html">
+  <meta name="description" content="好记性不如烂笔头">
+<meta property="og:type" content="website">
+<meta property="og:title" content="刘国兵的博客">
+<meta property="og:url" content="http://liuguobing634.github.io/lgb-blog/tags/Nio/index.html">
 <meta property="og:site_name" content="刘国兵的博客">
-<meta property="og:description" content="集群的简介集群，我给的定义是：分布式是对外部变现为单一的系统，对内部则是有一组服务和资源组成的系统，能够提供负载均衡、并行计算和高可用性。 那我根据这个定义来看，首先是要对外部是单一的系统，假设系统是web服务，那么对于任何同样的请求，应该得到的同样的响应，我们为了能够达到负载均衡的目的，往往就将同样的服务部署到多台机器或者在一台机器启动多个，所以对于这样的一个条件，则会衍生出一个问题，那就是这些">
+<meta property="og:description" content="好记性不如烂笔头">
 <meta property="og:locale" content="zh">
-<meta property="og:updated_time" content="2017-10-02T02:47:53.000Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="我所理解的集群">
-<meta name="twitter:description" content="集群的简介集群，我给的定义是：分布式是对外部变现为单一的系统，对内部则是有一组服务和资源组成的系统，能够提供负载均衡、并行计算和高可用性。 那我根据这个定义来看，首先是要对外部是单一的系统，假设系统是web服务，那么对于任何同样的请求，应该得到的同样的响应，我们为了能够达到负载均衡的目的，往往就将同样的服务部署到多台机器或者在一台机器启动多个，所以对于这样的一个条件，则会衍生出一个问题，那就是这些">
+<meta name="twitter:title" content="刘国兵的博客">
+<meta name="twitter:description" content="好记性不如烂笔头">
   
     <link rel="alternate" href="/atom.xml" title="刘国兵的博客" type="application/atom+xml">
   
@@ -69,67 +67,39 @@
   </div>
 </header>
       <div class="outer">
-        <section id="main"><article id="post-what-is-cluster" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/lgb-blog/2017/10/01/what-is-cluster/" class="article-date">
-  <time datetime="2017-10-01T14:57:00.000Z" itemprop="datePublished">2017-10-01</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
+        <section id="main">
   
-    <h1 class="article-title" itemprop="name">
-      我所理解的集群
+  
+    
+    
+      
+      
+      <section class="archives-wrap">
+        <div class="archive-year-wrap">
+          <a href="/lgb-blog/archives/2017" class="archive-year">2017</a>
+        </div>
+        <div class="archives">
+    
+    <article class="archive-article archive-type-post">
+  <div class="archive-article-inner">
+    <header class="archive-article-header">
+      <a href="/lgb-blog/2017/10/10/nio-1/" class="archive-article-date">
+  <time datetime="2017-10-09T23:23:56.000Z" itemprop="datePublished">Oct 10</time>
+</a>
+      
+  
+    <h1 itemprop="name">
+      <a class="archive-article-title" href="/lgb-blog/2017/10/10/nio-1/">nio-1</a>
     </h1>
   
 
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="集群的简介"><a href="#集群的简介" class="headerlink" title="集群的简介"></a>集群的简介</h2><p>集群，我给的定义是：分布式是对外部变现为单一的系统，对内部则是有一组服务和资源组成的系统，能够提供负载均衡、并行计算和高可用性。</p>
-<p>那我根据这个定义来看，首先是要对外部是单一的系统，假设系统是web服务，那么对于任何同样的请求，应该得到的同样的响应，我们为了能够达到负载均衡的目的，往往就将同样的服务部署到多台机器或者在一台机器启动多个，所以对于这样的一个条件，则会衍生出一个问题，那就是这些服务之间的状态是可能不一样的，比如对于web服务器，一个用户登录时可能用到的是其中的某一台，登录之后保存了他的信息到session中，而之后他做的其他操作，系统给他分配到了另一台服务器，可是那一台服务器并不存在这一条session，这样数据就不同步，同样的请求返回的数据不一样。所以衍生出了很多种办法，有一种是使用了jwt的技术来达到服务无状态的目的，这个我们不谈论，另一种用得较多的则是改变session的管理方式，将它放到一个公共的能够访问到的app上，这个app往往由缓存服务例如redis担当。这只是web服务的负载均衡，当请求达到了一定的量，单台数据库连接也会出现崩溃的情况，所以数据库也需要多台来负载均衡，于是又会出现刚才那样的情况，比如一个事务对一台服务器的数据进行了修改，另一个查询的事务查询的不是这台服务器，那么这就会出现脏读的情况，所以数据库之间的数据同步很重要，这就出现了各种数据库主从同步复制等方案。各类程序的集群都会面临这样的问题，如缓存服务、如zookeeper等，有的他们内部做出了处理我们不太需要管，有的不是天生为集群而生，则可能一开始没考虑到这问题，那么就需要我们去耍一些手段了，这里我就不一一讲解这些手段。</p>
-<p>集群还有一个高可用性的特征，也就是说集群的机器比单机要稳定很多，在高并发下，单机的宕机率是很高的，集群因为有了负载均衡，所以每台机器理论上收到的连接是平均分的，但也会出现其中一台或几台宕机的情况，那么这时候服务应该还要可用，所以在集群方案中我们应该对宕机了的机器进行处置，让他无法轮询到，直到他可用的那一刻，这时候就可以用zookeeper这样的app进行服务注册和主从选择，当然对于web应用来说，nginx已经可以做到很好了。</p>
-<p>对于并行计算，我所了解的不多，相关的应用我只知道hadoop极其衍生的工具如spark等，所以我也就不去分析。</p>
-<p>根据我说说的这几点，对于一个应用来说，如果要给出它的集群方案，我们就应该从上述几点去分析，然后给出相应的对策即可。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/01/what-is-cluster/" data-id="cj8kv1x70000n789ep5ktj751" class="article-share-link">Partager</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li></ul>
-
-    </footer>
+    </header>
   </div>
-  
-    
-<nav id="article-nav">
-  
-    <a href="/lgb-blog/2017/10/02/lerning-hessian-1/" id="article-nav-newer" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Récent</strong>
-      <div class="article-nav-title">
-        
-          Hessian学习（一）
-        
-      </div>
-    </a>
-  
-  
-    <a href="/lgb-blog/2017/09/29/lerning-spring-4/" id="article-nav-older" class="article-nav-link-wrap">
-      <strong class="article-nav-caption">Ancien</strong>
-      <div class="article-nav-title">Spring学习（4）</div>
-    </a>
-  
-</nav>
-
-  
 </article>
+  
+  
+    </div></section>
+  
 
 </section>
         
