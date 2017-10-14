@@ -69,6 +69,66 @@
       <div class="outer">
         <section id="main">
   
+    <article id="post-dubbo-testing-3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lgb-blog/2017/10/14/dubbo-testing-3/" class="article-date">
+  <time datetime="2017-10-14T00:30:04.000Z" itemprop="datePublished">2017-10-14</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/lgb-blog/categories/dubbo/">dubbo</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/lgb-blog/2017/10/14/dubbo-testing-3/">dubbo学习（三）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>这一节我测试一下dubbo的两个功能，并发控制与mock。</p>
+<p>首先说下mock，mock是可以在服务提供者不可用时服务消费者回退到本地版本，通常如果我们没有提供mock的前提下，服务提供者不可用的时候，服务消费者会请求失败而报错，而mock可以避免该事件产生。</p>
+<p>我们先来写下代码：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">@Reference(mock = &quot;lew.bing.service.local.impl.UserServiceImpl&quot;)</div><div class="line">private UserService userService;</div></pre></td></tr></table></figure>
+<p>本地的UserServiceImpl:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserServiceImpl</span> <span class="keyword">implements</span> <span class="title">UserService</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Logger logger = LoggerFactory.getLogger(UserServiceImpl.class);</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">UserServiceImpl</span><span class="params">()</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"init"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">get</span><span class="params">(<span class="keyword">long</span> id)</span> </span>&#123;</div><div class="line">        logger.info(<span class="string">"远程调用不可用，本地方法请求id:&#123;&#125;"</span>,id);</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">get</span><span class="params">(String username)</span> </span>&#123;</div><div class="line">        logger.info(<span class="string">"远程调用不可用，本地方法请求username:&#123;&#125;"</span>,username);</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> User <span class="title">register</span><span class="params">(String username, String password)</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">destroy</span><span class="params">(User user)</span> </span>&#123;</div><div class="line"></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">changePwd</span><span class="params">(User user)</span> </span>&#123;</div><div class="line"></div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>当我试着不启动服务提供者时，这个userService还是为空，我猜测只是两者无法互联是会回退到本地版本，因为是单机不好测试无法互联的情况，或者是说能找到服务提供者的地址，但无法调用，结合我接下来要讲的并发控制，我觉得我的猜测并没有错。</p>
+<p>dubbo提供了一些并发控制的设置，官方文档给出了四种样例，分别是服务器端并发控制和消费端并发控制，以及他们的类版本和方法版本。</p>
+<p>服务器端并发控制就是在服务提供者写下如下类似代码:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">dubbo:service</span> <span class="attr">interface</span>=<span class="string">"xxx"</span> <span class="attr">executes</span>=<span class="string">"10"</span>/&gt;</span></div></pre></td></tr></table></figure>
+<p>或者:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">dubbo:service</span> <span class="attr">interface</span>=<span class="string">"xxx"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">dubbo:method</span> <span class="attr">name</span>=<span class="string">"sayHello"</span> <span class="attr">executes</span>=<span class="string">"10"</span> /&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">dubbo:service</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>我先来测试一下,我现在的服务提供者的dubbo文件如下:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">beans</span> <span class="attr">xmlns</span>=<span class="string">"http://www.springframework.org/schema/beans"</span></span></div><div class="line"><span class="tag">       <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></div><div class="line"><span class="tag">       <span class="attr">xmlns:dubbo</span>=<span class="string">"http://code.alibabatech.com/schema/dubbo"</span></span></div><div class="line"><span class="tag">       <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd</span></span></div><div class="line"><span class="tag"><span class="string">       http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd"</span>&gt;</span></div><div class="line"></div><div class="line">    <span class="comment">&lt;!-- 提供方应用信息 --&gt;</span></div><div class="line"></div><div class="line">    <span class="comment">&lt;!-- 提供方的名称 --&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">dubbo:application</span> <span class="attr">name</span>=<span class="string">"u-provider"</span>/&gt;</span></div><div class="line"></div><div class="line">    <span class="comment">&lt;!-- 服务注册中心 --&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">dubbo:registry</span> <span class="attr">address</span>=<span class="string">"zookeeper://127.0.0.1:2181"</span>/&gt;</span></div><div class="line"></div><div class="line">    <span class="comment">&lt;!-- dubbo暴露的协议 --&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">dubbo:protocol</span> <span class="attr">name</span>=<span class="string">"dubbo"</span> <span class="attr">port</span>=<span class="string">"20880"</span> /&gt;</span></div><div class="line"></div><div class="line"></div><div class="line">    <span class="comment">&lt;!-- 暴露给外面的接口 --&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">dubbo:service</span> <span class="attr">interface</span>=<span class="string">"lew.bing.service.UserService"</span> <span class="attr">ref</span>=<span class="string">"userService"</span> <span class="attr">executes</span>=<span class="string">"3"</span>/&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;/<span class="name">beans</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>然后我在消费者这里做个测试，测试代码如下:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@SpringBootTest</span></div><div class="line"><span class="meta">@ImportResource</span>(<span class="string">"classpath:dubbo.xml"</span>)</div><div class="line"><span class="meta">@RunWith</span>(SpringJUnit4ClassRunner.class)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UserServiceTest</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Reference</span>(mock = <span class="string">"lew.bing.service.local.impl.UserServiceImpl"</span>)</div><div class="line">    <span class="keyword">private</span> UserService userService;</div><div class="line"></div><div class="line">    <span class="meta">@Test</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test1</span><span class="params">()</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line">        <span class="keyword">assert</span> userService != <span class="keyword">null</span>;</div><div class="line">        ExecutorService executorService = Executors.newFixedThreadPool(<span class="number">4</span>);</div><div class="line">        List&lt;Callable&lt;Void&gt;&gt; callables = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>;i &lt; <span class="number">5</span>;i++) &#123;</div><div class="line">                    <span class="keyword">int</span> finalI = i;</div><div class="line">                    callables.add(() -&gt; &#123;</div><div class="line">                        userService.get(finalI);</div><div class="line">                        <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">                    &#125;);</div><div class="line">                &#125;</div><div class="line">        List&lt;Future&lt;Void&gt;&gt; futures = executorService.invokeAll(callables);</div><div class="line">        Thread.sleep(<span class="number">20000</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>使用一个线程池，然后创建五个Callable进去执行，执行后会发现控制台有如下提示出现：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">2017-10-14 08:59:46.167  INFO 11537 --- [pool-3-thread-2] l.b.service.local.impl.UserServiceImpl   : 远程调用不可用，本地方法请求id:1</div></pre></td></tr></table></figure>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/14/dubbo-testing-3/" data-id="cj8qlf8xo0000nr9eoqca9w1v" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
     <article id="post-dubbo-testing-2" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/lgb-blog/2017/10/13/dubbo-testing-2/" class="article-date">
@@ -146,7 +206,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/13/dubbo-testing-2/" data-id="cj8pxod2o0006k49evzceppar" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/13/dubbo-testing-2/" data-id="cj8qlf8yn000bnr9eeio2y75a" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li></ul>
@@ -208,7 +268,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/10/nio-1/" data-id="cj8pxod3j000tk49ee89kog6r" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/10/nio-1/" data-id="cj8qlf8zn0012nr9ep7c82uvy" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/Nio/">Nio</a></li></ul>
@@ -294,7 +354,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/03/lerning-spring-5/" data-id="cj8pxod3h000sk49eq6c4b4ab" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/03/lerning-spring-5/" data-id="cj8qlf8zs0016nr9e9fcgf409" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring-cloud/">spring cloud</a></li></ul>
@@ -346,7 +406,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/02/lerning-hessian-2/" data-id="cj8pxod2z000ak49emcgooaky" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/02/lerning-hessian-2/" data-id="cj8qlf8z8000mnr9e82ujbimx" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
@@ -402,7 +462,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/02/lerning-hessian-1/" data-id="cj8pxod31000ck49e9csx2nae" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/02/lerning-hessian-1/" data-id="cj8qlf8z6000knr9e2ep0ok8e" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li></ul>
@@ -445,7 +505,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/01/what-is-cluster/" data-id="cj8pxod3t000zk49e3p6jlhkq" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/01/what-is-cluster/" data-id="cj8qlf8zw001anr9ef769xqa0" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li></ul>
@@ -519,7 +579,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/29/lerning-spring-4/" data-id="cj8pxod3e000nk49eqg8rggx4" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/29/lerning-spring-4/" data-id="cj8qlf8zi000wnr9e2bqykgq2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li></ul>
@@ -612,7 +672,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-3/" data-id="cj8pxod3d000lk49e2ulwsjf6" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-3/" data-id="cj8qlf8zd000snr9e7s6oh3p2" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
@@ -689,85 +749,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-2/" data-id="cj8pxod39000hk49eer6xnaed" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-2/" data-id="cj8qlf8zb000qnr9eo54hgvwo" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-lerning-spring-1" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/lgb-blog/2017/09/27/lerning-spring-1/" class="article-date">
-  <time datetime="2017-09-27T08:19:38.000Z" itemprop="datePublished">2017-09-27</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/lgb-blog/categories/spring/">spring</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/lgb-blog/2017/09/27/lerning-spring-1/">学习spring-第一讲</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>一个电话面试让我一下午都无法平静，这一刻我才想到我要重温基础了，spring作为绝大部分java需要会的，就从这里开始吧。</p>
-<h3 id="1-Ioc-xml部分"><a href="#1-Ioc-xml部分" class="headerlink" title="1 Ioc xml部分"></a>1 Ioc xml部分</h3><p>首先创建一个gradle项目，加入依赖。</p>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">compile <span class="string">group:</span> <span class="string">'org.springframework'</span>, <span class="string">name:</span> <span class="string">'spring-core'</span>, <span class="string">version:</span> <span class="string">'4.3.11.RELEASE'</span></div><div class="line">compile <span class="string">group:</span> <span class="string">'org.springframework'</span>, <span class="string">name:</span> <span class="string">'spring-aop'</span>, <span class="string">version:</span> <span class="string">'4.3.11.RELEASE'</span></div><div class="line">compile <span class="string">group:</span> <span class="string">'org.springframework'</span>, <span class="string">name:</span> <span class="string">'spring-context'</span>, <span class="string">version:</span> <span class="string">'4.3.11.RELEASE'</span></div><div class="line">compile <span class="string">group:</span> <span class="string">'org.springframework'</span>, <span class="string">name:</span> <span class="string">'spring-context-support'</span>, <span class="string">version:</span> <span class="string">'4.3.11.RELEASE'</span></div></pre></td></tr></table></figure>
-<p>然后先准备好几个要测试的代码类，我这里写一个接口和两个类。</p>
-<p>接口Simple.java:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">Simple</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(String name)</span></span>;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>类SimpleImpl.java:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">SimpleImpl</span> <span class="keyword">implements</span> <span class="title">Simple</span> </span>&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sayHello</span><span class="params">(String name)</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"Hello, "</span> + name);</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>类UseSimple:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">UseSimple</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> Simple simple;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">(String name)</span> </span>&#123;</div><div class="line">        simple.sayHello(name);</div><div class="line">    &#125;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">setSimple</span><span class="params">(Simple simple)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.simple = simple;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>然后就是配置文件，application.xml:</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">beans</span> <span class="attr">xmlns</span>=<span class="string">"http://www.springframework.org/schema/beans"</span></span></div><div class="line"><span class="tag">       <span class="attr">xmlns:xsi</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></div><div class="line"><span class="tag">       <span class="attr">xmlns:aop</span>=<span class="string">"http://www.springframework.org/schema/aop"</span></span></div><div class="line"><span class="tag">       <span class="attr">xsi:schemaLocation</span>=<span class="string">"http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd</span></span></div><div class="line"><span class="tag"><span class="string">        http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop.xsd"</span>&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"simple"</span> <span class="attr">class</span>=<span class="string">"lew.bing.spring.SimpleImpl"</span>/&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"useSimple"</span> <span class="attr">class</span>=<span class="string">"lew.bing.spring.UseSimple"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"simple"</span> <span class="attr">ref</span>=<span class="string">"simple"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">beans</span>&gt;</span></div></pre></td></tr></table></figure>
-<p>最后是测试代码，RunMain.java:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">RunMain</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        ApplicationContext context = <span class="keyword">new</span> ClassPathXmlApplicationContext(<span class="string">"application.xml"</span>);</div><div class="line">        UseSimple bean = context.getBean(UseSimple.class);</div><div class="line">        bean.test(<span class="string">"刘国兵"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>运行成功打印出 “hello, 刘国兵”</p>
-<h3 id="2-ioc-annotation部分"><a href="#2-ioc-annotation部分" class="headerlink" title="2 ioc annotation部分"></a>2 ioc annotation部分</h3><p>annotation是spring2.5以来一个很重要的功能，同样我们先创建一个类.</p>
-<p>Simple2.java</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Component</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Simple2</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Autowired</span></div><div class="line">    <span class="keyword">private</span> Simple simple;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doThing</span><span class="params">(String name)</span> </span>&#123;</div><div class="line">        simple.sayHello(name);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    Simple2() &#123;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>@Component代表spring的一个组件Bean，其实还有@Service、@Repository和@Controller，配置了注解之后，spring容器就会在启动时自动将他们放入到容器之中。</p>
-<p>xml文件添加下面两行：</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">context:annotation-config</span> /&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">context:component-scan</span> <span class="attr">base-package</span>=<span class="string">"lew.bing.spring.ioc.ann"</span>/&gt;</span></div></pre></td></tr></table></figure>
-<p>注意要在xml文件加入context的相关的schema。</p>
-<h3 id="3-AOP-xml部分"><a href="#3-AOP-xml部分" class="headerlink" title="3 AOP xml部分"></a>3 AOP xml部分</h3><p>首先为了体验良好，我们需要在添加AspectJ这个库进来，这样我们就可以代理普通类了。</p>
-<figure class="highlight groovy"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"> <span class="comment">// https://mvnrepository.com/artifact/org.aspectj/aspectjweaver</span></div><div class="line">    compile <span class="string">group:</span> <span class="string">'org.aspectj'</span>, <span class="string">name:</span> <span class="string">'aspectjweaver'</span>, <span class="string">version:</span> <span class="string">'1.8.10'</span></div><div class="line"><span class="comment">// https://mvnrepository.com/artifact/org.aspectj/aspectjrt</span></div><div class="line">    compile <span class="string">group:</span> <span class="string">'org.aspectj'</span>, <span class="string">name:</span> <span class="string">'aspectjrt'</span>, <span class="string">version:</span> <span class="string">'1.8.10'</span></div></pre></td></tr></table></figure>
-<p>然后我为了省事，直接在Simple2中写切面方法.</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Component</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Simple2</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Autowired</span></div><div class="line">    <span class="keyword">private</span> Simple simple;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doThing</span><span class="params">(String name)</span> </span>&#123;</div><div class="line">        simple.sayHello(name);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">beforeDo</span><span class="params">()</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"前"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">afterDo</span><span class="params">()</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"后"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">aroundDo</span><span class="params">(ProceedingJoinPoint point)</span> <span class="keyword">throws</span> Throwable </span>&#123;</div><div class="line">        System.out.println(<span class="string">"环绕，执行前"</span>);</div><div class="line">        Object[] args = point.getArgs();</div><div class="line">        Object s = point.proceed(args);</div><div class="line">        System.out.println(<span class="string">"环绕，执行后"</span>);</div><div class="line">        <span class="keyword">return</span> s;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    Simple2() &#123;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>然后是xml代码</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">aop:config</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">aop:aspect</span> <span class="attr">ref</span>=<span class="string">"simple2"</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">aop:pointcut</span> <span class="attr">id</span>=<span class="string">"pit"</span> <span class="attr">expression</span>=<span class="string">"execution(* lew.bing.spring.ioc.UseSimple.*(..))"</span>/&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">aop:before</span> <span class="attr">pointcut-ref</span>=<span class="string">"pit"</span> <span class="attr">method</span>=<span class="string">"beforeDo"</span>/&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">aop:after</span> <span class="attr">pointcut-ref</span>=<span class="string">"pit"</span> <span class="attr">method</span>=<span class="string">"afterDo"</span>/&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">aop:around</span> <span class="attr">method</span>=<span class="string">"aroundDo"</span> <span class="attr">pointcut-ref</span>=<span class="string">"pit"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">aop:aspect</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">aop:config</span>&gt;</span></div></pre></td></tr></table></figure>
-<h3 id="4-AOP-annotation"><a href="#4-AOP-annotation" class="headerlink" title="4 AOP annotation"></a>4 AOP annotation</h3><p>开启注解配置aop，只需要在xml配置文件中添加下面这个代码即可:</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">aop:aspectj-autoproxy</span>/&gt;</span></div></pre></td></tr></table></figure>
-<p>然后修改Simple2.java</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Component</span></div><div class="line"><span class="meta">@Aspect</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Simple2</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="meta">@Autowired</span></div><div class="line">    <span class="keyword">private</span> Simple simple;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">doThing</span><span class="params">(String name)</span> </span>&#123;</div><div class="line">        simple.sayHello(name);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Before</span>(<span class="string">"execution(* lew.bing.spring.ioc.UseSimple.*(..))"</span>)</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">beforeDo</span><span class="params">()</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"前"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@After</span>(<span class="string">"execution(* lew.bing.spring.ioc.UseSimple.*(..))"</span>)</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">afterDo</span><span class="params">()</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"后"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Around</span>(<span class="string">"execution(* lew.bing.spring.ioc.UseSimple.*(..))"</span>)</div><div class="line">    <span class="function"><span class="keyword">public</span> Object <span class="title">aroundDo</span><span class="params">(ProceedingJoinPoint point)</span> <span class="keyword">throws</span> Throwable </span>&#123;</div><div class="line">        System.out.println(<span class="string">"环绕，执行前"</span>);</div><div class="line">        Object[] args = point.getArgs();</div><div class="line">        Object s = point.proceed(args);</div><div class="line">        System.out.println(<span class="string">"环绕，执行后"</span>);</div><div class="line">        <span class="keyword">return</span> s;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    Simple2() &#123;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>spring的简单使用就到此</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/27/lerning-spring-1/" data-id="cj8pxod37000gk49el4eim48c" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
 
     </footer>
   </div>
@@ -809,7 +794,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/lgb-blog/tags/Nio/" style="font-size: 10px;">Nio</a> <a href="/lgb-blog/tags/activeMq/" style="font-size: 16.67px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 16.67px;">dubbo</a> <a href="/lgb-blog/tags/hessian/" style="font-size: 13.33px;">hessian</a> <a href="/lgb-blog/tags/jms/" style="font-size: 16.67px;">jms</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/rpc/" style="font-size: 10px;">rpc</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-cloud/" style="font-size: 10px;">spring cloud</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a>
+      <a href="/lgb-blog/tags/Nio/" style="font-size: 10px;">Nio</a> <a href="/lgb-blog/tags/activeMq/" style="font-size: 15px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 17.5px;">dubbo</a> <a href="/lgb-blog/tags/hessian/" style="font-size: 12.5px;">hessian</a> <a href="/lgb-blog/tags/jms/" style="font-size: 15px;">jms</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/rpc/" style="font-size: 10px;">rpc</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-cloud/" style="font-size: 10px;">spring cloud</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 12.5px;">zookeeper</a>
     </div>
   </div>
 
@@ -831,6 +816,10 @@
       <ul>
         
           <li>
+            <a href="/lgb-blog/2017/10/14/dubbo-testing-3/">dubbo学习（三）</a>
+          </li>
+        
+          <li>
             <a href="/lgb-blog/2017/10/13/dubbo-testing-2/">dubbo试用之源码分析（一）</a>
           </li>
         
@@ -844,10 +833,6 @@
         
           <li>
             <a href="/lgb-blog/2017/10/02/lerning-hessian-2/">Hessian学习（二）</a>
-          </li>
-        
-          <li>
-            <a href="/lgb-blog/2017/10/02/lerning-hessian-1/">Hessian学习（一）</a>
           </li>
         
       </ul>
