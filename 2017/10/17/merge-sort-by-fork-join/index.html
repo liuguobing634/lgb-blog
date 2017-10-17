@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>fork-join来实现排序算法 | 刘国兵的博客</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="ForkJoin是java并发库中的一个线程池，它的思想是将一个问题分解成多个相似的子问题，然后交给线程池的线程去分别处理，然后把处理的结果再归并。 归并排序因为是分冶算法显然很适合用这个线程池去实现，我给出我的代码： 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495">
+<meta name="keywords" content="ForkJoin,并发,多线程">
+<meta property="og:type" content="article">
+<meta property="og:title" content="fork-join来实现排序算法">
+<meta property="og:url" content="http://liuguobing634.github.io/lgb-blog/2017/10/17/merge-sort-by-fork-join/index.html">
+<meta property="og:site_name" content="刘国兵的博客">
+<meta property="og:description" content="ForkJoin是java并发库中的一个线程池，它的思想是将一个问题分解成多个相似的子问题，然后交给线程池的线程去分别处理，然后把处理的结果再归并。 归并排序因为是分冶算法显然很适合用这个线程池去实现，我给出我的代码： 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2017-10-17T14:57:23.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="fork-join来实现排序算法">
+<meta name="twitter:description" content="ForkJoin是java并发库中的一个线程池，它的思想是将一个问题分解成多个相似的子问题，然后交给线程池的线程去分别处理，然后把处理的结果再归并。 归并排序因为是分冶算法显然很适合用这个线程池去实现，我给出我的代码： 123456789101112131415161718192021222324252627282930313233343536373839404142434445464748495">
+  
+    <link rel="alternate" href="/atom.xml" title="刘国兵的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/lgb-blog/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/lgb-blog/" id="logo">刘国兵的博客</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/lgb-blog/" id="subtitle">技术无止境</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/lgb-blog/">Home</a>
+        
+          <a class="main-nav-link" href="/lgb-blog/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liuguobing634.github.io/lgb-blog"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-merge-sort-by-fork-join" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lgb-blog/2017/10/17/merge-sort-by-fork-join/" class="article-date">
+  <time datetime="2017-10-17T13:45:25.000Z" itemprop="datePublished">2017-10-17</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      fork-join来实现排序算法
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>ForkJoin是java并发库中的一个线程池，它的思想是将一个问题分解成多个相似的子问题，然后交给线程池的线程去分别处理，然后把处理的结果再归并。</p>
+<p>归并排序因为是分冶算法显然很适合用这个线程池去实现，我给出我的代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Sort</span> <span class="keyword">extends</span> <span class="title">RecursiveTask</span>&lt;<span class="title">List</span>&lt;<span class="title">Integer</span>&gt;&gt; </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> List&lt;Integer&gt; initList;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">Sort</span><span class="params">(List&lt;Integer&gt; initList)</span> </span>&#123;</div><div class="line">        <span class="keyword">this</span>.initList = initList;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">protected</span> List&lt;Integer&gt; <span class="title">compute</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">int</span> n = initList.size();</div><div class="line">        <span class="keyword">if</span> (n &lt; <span class="number">2</span>) &#123;</div><div class="line">            <span class="keyword">return</span> initList;</div><div class="line">        &#125; <span class="keyword">else</span> &#123;</div><div class="line">            Sort left = <span class="keyword">new</span> Sort(initList.subList(<span class="number">0</span>,n / <span class="number">2</span>));</div><div class="line">            Sort right = <span class="keyword">new</span> Sort(initList.subList(n / <span class="number">2</span>, n));</div><div class="line">            left.fork();</div><div class="line">            right.fork();</div><div class="line">            List&lt;Integer&gt; leftJoin = left.join();</div><div class="line">            List&lt;Integer&gt; rightJoin = right.join();</div><div class="line">            List&lt;Integer&gt; result = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">            <span class="keyword">int</span> i = <span class="number">0</span>;</div><div class="line">            <span class="keyword">int</span> j = <span class="number">0</span>;</div><div class="line">            <span class="keyword">while</span> (i &lt; leftJoin.size() &amp;&amp; j &lt; rightJoin.size()) &#123;</div><div class="line">                Integer leftI = leftJoin.get(i);</div><div class="line">                Integer rightI = rightJoin.get(j);</div><div class="line">                <span class="keyword">if</span> (leftI &lt; rightI) &#123;</div><div class="line">                    result.add(leftI);</div><div class="line">                    i ++;</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    result.add(rightI);</div><div class="line">                    j++;</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (i &lt; leftJoin.size()) &#123;</div><div class="line">                result.addAll(leftJoin.subList(i, leftJoin.size()));</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">if</span> (j &lt; rightJoin.size()) &#123;</div><div class="line">                result.addAll(rightJoin.subList(j,rightJoin.size()));</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">return</span> result;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> ExecutionException, InterruptedException </span>&#123;</div><div class="line">        ForkJoinPool pool = <span class="keyword">new</span> ForkJoinPool();</div><div class="line">        List&lt;Integer&gt; numbers = <span class="keyword">new</span> ArrayList&lt;&gt;();</div><div class="line">        <span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>;i &lt; <span class="number">100</span>;i++) &#123;</div><div class="line">            numbers.add((<span class="keyword">int</span>)(Math.random() * <span class="number">100</span>));</div><div class="line">        &#125;</div><div class="line">        System.out.println(numbers);</div><div class="line">        System.out.println(<span class="string">"------------------------"</span>);</div><div class="line">        Sort s= <span class="keyword">new</span> Sort(numbers);</div><div class="line">        List&lt;Integer&gt; integers = pool.submit(s).get();</div><div class="line">        System.out.println(integers);</div><div class="line">        System.out.println(<span class="string">"------------------------"</span>);</div><div class="line">        System.out.println(numbers);</div><div class="line">        System.out.println(<span class="string">"------------------------"</span>);</div><div class="line">        Collections.sort(numbers);</div><div class="line">        System.out.println(numbers);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>RecursiveTask是ForkJoinTask的一个子类，顾名思义就是递归的形式去计算。我们用forkJoin也主要用这个或者RecursiveAction</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/17/merge-sort-by-fork-join/" data-id="cj8vqggqz000w929e9svj0one" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/ForkJoin/">ForkJoin</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/多线程/">多线程</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/并发/">并发</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/lgb-blog/2017/10/14/java-base-1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">java基础只类加载机制</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/activeMq/">activeMq</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/dubbo/">dubbo</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/java/">java</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/spring/">spring</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/zookeeper/">zookeeper</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/ForkJoin/">ForkJoin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/Nio/">Nio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jvm/">jvm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-cloud/">spring cloud</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/并发/">并发</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/lgb-blog/tags/ForkJoin/" style="font-size: 10px;">ForkJoin</a> <a href="/lgb-blog/tags/Nio/" style="font-size: 10px;">Nio</a> <a href="/lgb-blog/tags/activeMq/" style="font-size: 13.33px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 16.67px;">dubbo</a> <a href="/lgb-blog/tags/hessian/" style="font-size: 13.33px;">hessian</a> <a href="/lgb-blog/tags/java/" style="font-size: 10px;">java</a> <a href="/lgb-blog/tags/jms/" style="font-size: 13.33px;">jms</a> <a href="/lgb-blog/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/rpc/" style="font-size: 10px;">rpc</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-cloud/" style="font-size: 10px;">spring cloud</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a> <a href="/lgb-blog/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/lgb-blog/tags/并发/" style="font-size: 10px;">并发</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/17/merge-sort-by-fork-join/">fork-join来实现排序算法</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/14/java-base-1/">java基础只类加载机制</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/14/dubbo-testing-3/">dubbo学习（三）</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/13/dubbo-testing-2/">dubbo试用之源码分析（一）</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/10/nio-1/">nio-1</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 刘国兵<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/lgb-blog/" class="mobile-nav-link">Home</a>
+  
+    <a href="/lgb-blog/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/lgb-blog/fancybox/jquery.fancybox.css">
+  <script src="/lgb-blog/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/lgb-blog/js/script.js"></script>
+
+  </div>
+</body>
+</html>

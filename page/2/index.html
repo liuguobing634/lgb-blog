@@ -56,9 +56,9 @@
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liuguobing634.github.io/lgb-blog"></form>
@@ -68,6 +68,99 @@
 </header>
       <div class="outer">
         <section id="main">
+  
+    <article id="post-lerning-spring-3" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lgb-blog/2017/09/28/lerning-spring-3/" class="article-date">
+  <time datetime="2017-09-28T07:19:53.000Z" itemprop="datePublished">2017-09-28</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/lgb-blog/categories/spring/">spring</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/lgb-blog/2017/09/28/lerning-spring-3/">spring学习（三）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="spring的事务管理"><a href="#spring的事务管理" class="headerlink" title="spring的事务管理"></a>spring的事务管理</h2><p>spring是支持两种事务的，编程式与声明式，编程式是使用TransactionTemplate，但编程式事务管理代码侵入性太高，所以推荐使用声明式。</p>
+<p>我先来回顾一下什么是事务吧。</p>
+<h3 id="1-事务"><a href="#1-事务" class="headerlink" title="1 事务"></a>1 事务</h3><p>事务很简单，就是做一件事情。而一件事情往往是分步骤的，然后这些步骤很可能回出现错误，这时候要应对这些错误进行处理。</p>
+<p>事务有四大特性：</p>
+<ul>
+<li>第一是原子性，这件事整个过程是应该统一的，每个步骤出错之前的步骤应该要还原。</li>
+<li>第二是一致性，这是指事务执行的结果应该是使事务从一个一致性状态到另一个一致性状态。（这个有些难理解）</li>
+<li>第三是隔离性，一个事务的执行不能被另一个事务所干扰。</li>
+<li>第四是持久性，事务一旦提交，对数据的修改是永久的。</li>
+</ul>
+<p>实际开发中很可能因为性能的原因而不完全遵从上面几大特性，所以就可能出现如下几种情况：</p>
+<ul>
+<li>第一是脏读，脏读就是指当一个事务正在访问数据，并且对数据进行了修改，而这种修改还没有提交到数据库中，这时，另外一个事务也访问这个数据，然后使用了这个数据。</li>
+<li>第二是幻读，是指当事务不是独立执行时发生的一种现象，例如第一个事务对一个表中的数据进行了修改，这种修改涉及到表中的全部数据行。同时，第二个事务也修改这个表中的数据，这种修改是向表中插入一行新数据。那么，以后就会发生操作第一个事务的用户发现表中还有没有修改的数据行，就好象发生了幻觉一样。</li>
+<li>第三是不可重复读，是指在一个事务内，多次读同一数据。在这个事务还没有结束时，另外一个事务也访问该同一数据。那么，在第一个事务中的两次读数据之间，由于第二个事务的修改，那么第一个事务两次读到的的数据可能是不一样的。这样就发生了在一个事务内两次读到的数据是不一样的，因此称为是不可重复读。（即不能读到相同的数据内容）。</li>
+</ul>
+<p>为了避免这些情况，所以事务隔离就有四个级别。</p>
+<ol>
+<li>Read uncommitted，就是一个事务修改数据并未提交，另一个事务在读取。很明显这样以上三种情况都可能发生。这相当于没有事务隔离</li>
+<li>Read committed, 只能在提交了事务之后才能读，这样可以避免脏读的情况，但可能出现不可重复读，因为这种隔离级别下一个事务多次读取，两次读取之间另一个事务是允许修改数据的。很多数据库默认是此级别。</li>
+<li>Repeatable read, 可以避免脏读和不可重复读，这个会锁定行，也就是在读取或者其他操作期间都无法有另一个事务更改数据，不过有可能出现幻读现象。mysql默认是这个。</li>
+<li>Serializable，以上所有情况都可避免，但性能很低，每条语句都是顺序执行。</li>
+</ol>
+<p>一般情况下我们会选择Read committed，保证性能的同时也对事务有一定的隔离，虽然会出现不可重复读和幻读，但一般的应用这样比较少，然后可以利用一些开发中的乐观锁和悲观锁解决。这里引申出两个概念：</p>
+<ol>
+<li>悲观锁，悲观锁是依赖于数据库锁的，一般是在整个数据处理过程都锁住数据，不过这样带来的是性能低下</li>
+<li>乐观锁，乐观锁一般是外部程序控制的，比如hibernate的乐观锁。乐观锁大多数是基于数据版本记录机制实现。</li>
+</ol>
+<p>hibernate实现了这两种锁（严格来说是第一种锁依赖于数据库，hibernate只是做了相关处理），但是mybatis并没有自己去实现这两种锁，需要我们自己去弄。</p>
+<h3 id="2-spring的事务相关"><a href="#2-spring的事务相关" class="headerlink" title="2 spring的事务相关"></a>2 spring的事务相关</h3><p>spring的事务主要是配置这事务隔离级别、事务传播行为、事务超时、回滚规则。</p>
+<p>这里就以spring的注解为例，spring事务注解annotation是Transactional</p>
+<p>Transactional.java:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div><div class="line">104</div><div class="line">105</div><div class="line">106</div><div class="line">107</div><div class="line">108</div><div class="line">109</div><div class="line">110</div><div class="line">111</div><div class="line">112</div><div class="line">113</div><div class="line">114</div><div class="line">115</div><div class="line">116</div><div class="line">117</div><div class="line">118</div><div class="line">119</div><div class="line">120</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Target</span>(&#123;ElementType.METHOD, ElementType.TYPE&#125;)</div><div class="line"><span class="meta">@Retention</span>(RetentionPolicy.RUNTIME)</div><div class="line"><span class="meta">@Inherited</span></div><div class="line"><span class="meta">@Documented</span></div><div class="line"><span class="keyword">public</span> <span class="meta">@interface</span> Transactional &#123;</div><div class="line"></div><div class="line">	<span class="comment">/**</span></div><div class="line"><span class="comment">	 * Alias for &#123;<span class="doctag">@link</span> #transactionManager&#125;.</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> #transactionManager</span></div><div class="line"><span class="comment">	 */</span></div><div class="line">	<span class="meta">@AliasFor</span>(<span class="string">"transactionManager"</span>)</div><div class="line">	<span class="function">String <span class="title">value</span><span class="params">()</span> <span class="keyword">default</span> ""</span>;</div><div class="line"></div><div class="line">	<span class="comment">/**</span></div><div class="line"><span class="comment">	 * A &lt;em&gt;qualifier&lt;/em&gt; value for the specified transaction.</span></div><div class="line"><span class="comment">	 * &lt;p&gt;May be used to determine the target transaction manager,</span></div><div class="line"><span class="comment">	 * matching the qualifier value (or the bean name) of a specific</span></div><div class="line"><span class="comment">	 * &#123;<span class="doctag">@link</span> org.springframework.transaction.PlatformTransactionManager&#125;</span></div><div class="line"><span class="comment">	 * bean definition.</span></div><div class="line"><span class="comment">	 * <span class="doctag">@since</span> 4.2</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> #value</span></div><div class="line"><span class="comment">	 */</span></div><div class="line">	<span class="meta">@AliasFor</span>(<span class="string">"value"</span>)</div><div class="line">	<span class="function">String <span class="title">transactionManager</span><span class="params">()</span> <span class="keyword">default</span> ""</span>;</div><div class="line"></div><div class="line">	<span class="comment">/**</span></div><div class="line"><span class="comment">	 * The transaction propagation type.</span></div><div class="line"><span class="comment">	 * &lt;p&gt;Defaults to &#123;<span class="doctag">@link</span> Propagation#REQUIRED&#125;.</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> org.springframework.transaction.interceptor.TransactionAttribute#getPropagationBehavior()</span></div><div class="line"><span class="comment">	 */</span></div><div class="line">	<span class="function">Propagation <span class="title">propagation</span><span class="params">()</span> <span class="keyword">default</span> Propagation.REQUIRED</span>;</div><div class="line"></div><div class="line">	<span class="comment">/**</span></div><div class="line"><span class="comment">	 * The transaction isolation level.</span></div><div class="line"><span class="comment">	 * &lt;p&gt;Defaults to &#123;<span class="doctag">@link</span> Isolation#DEFAULT&#125;.</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> org.springframework.transaction.interceptor.TransactionAttribute#getIsolationLevel()</span></div><div class="line"><span class="comment">	 */</span></div><div class="line">	<span class="function">Isolation <span class="title">isolation</span><span class="params">()</span> <span class="keyword">default</span> Isolation.DEFAULT</span>;</div><div class="line"></div><div class="line">	<span class="comment">/**</span></div><div class="line"><span class="comment">	 * The timeout for this transaction.</span></div><div class="line"><span class="comment">	 * &lt;p&gt;Defaults to the default timeout of the underlying transaction system.</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> org.springframework.transaction.interceptor.TransactionAttribute#getTimeout()</span></div><div class="line"><span class="comment">	 */</span></div><div class="line">	<span class="function"><span class="keyword">int</span> <span class="title">timeout</span><span class="params">()</span> <span class="keyword">default</span> TransactionDefinition.TIMEOUT_DEFAULT</span>;</div><div class="line"></div><div class="line">	<span class="comment">/**</span></div><div class="line"><span class="comment">	 * &#123;<span class="doctag">@code</span> true&#125; if the transaction is read-only.</span></div><div class="line"><span class="comment">	 * &lt;p&gt;Defaults to &#123;<span class="doctag">@code</span> false&#125;.</span></div><div class="line"><span class="comment">	 * &lt;p&gt;This just serves as a hint for the actual transaction subsystem;</span></div><div class="line"><span class="comment">	 * it will &lt;i&gt;not necessarily&lt;/i&gt; cause failure of write access attempts.</span></div><div class="line"><span class="comment">	 * A transaction manager which cannot interpret the read-only hint will</span></div><div class="line"><span class="comment">	 * &lt;i&gt;not&lt;/i&gt; throw an exception when asked for a read-only transaction</span></div><div class="line"><span class="comment">	 * but rather silently ignore the hint.</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> org.springframework.transaction.interceptor.TransactionAttribute#isReadOnly()</span></div><div class="line"><span class="comment">	 */</span></div><div class="line">	<span class="function"><span class="keyword">boolean</span> <span class="title">readOnly</span><span class="params">()</span> <span class="keyword">default</span> <span class="keyword">false</span></span>;</div><div class="line"></div><div class="line">	<span class="comment">/**</span></div><div class="line"><span class="comment">	 * Defines zero (0) or more exception &#123;<span class="doctag">@link</span> Class classes&#125;, which must be</span></div><div class="line"><span class="comment">	 * subclasses of &#123;<span class="doctag">@link</span> Throwable&#125;, indicating which exception types must cause</span></div><div class="line"><span class="comment">	 * a transaction rollback.</span></div><div class="line"><span class="comment">	 * &lt;p&gt;By default, a transaction will be rolling back on &#123;<span class="doctag">@link</span> RuntimeException&#125;</span></div><div class="line"><span class="comment">	 * and &#123;<span class="doctag">@link</span> Error&#125; but not on checked exceptions (business exceptions). See</span></div><div class="line"><span class="comment">	 * &#123;<span class="doctag">@link</span> org.springframework.transaction.interceptor.DefaultTransactionAttribute#rollbackOn(Throwable)&#125;</span></div><div class="line"><span class="comment">	 * for a detailed explanation.</span></div><div class="line"><span class="comment">	 * &lt;p&gt;This is the preferred way to construct a rollback rule (in contrast to</span></div><div class="line"><span class="comment">	 * &#123;<span class="doctag">@link</span> #rollbackForClassName&#125;), matching the exception class and its subclasses.</span></div><div class="line"><span class="comment">	 * &lt;p&gt;Similar to &#123;<span class="doctag">@link</span> org.springframework.transaction.interceptor.RollbackRuleAttribute#RollbackRuleAttribute(Class clazz)&#125;.</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> #rollbackForClassName</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> org.springframework.transaction.interceptor.DefaultTransactionAttribute#rollbackOn(Throwable)</span></div><div class="line"><span class="comment">	 */</span></div><div class="line">	Class&lt;? extends Throwable&gt;[] rollbackFor() <span class="keyword">default</span> &#123;&#125;;</div><div class="line"></div><div class="line">	<span class="comment">/**</span></div><div class="line"><span class="comment">	 * Defines zero (0) or more exception names (for exceptions which must be a</span></div><div class="line"><span class="comment">	 * subclass of &#123;<span class="doctag">@link</span> Throwable&#125;), indicating which exception types must cause</span></div><div class="line"><span class="comment">	 * a transaction rollback.</span></div><div class="line"><span class="comment">	 * &lt;p&gt;This can be a substring of a fully qualified class name, with no wildcard</span></div><div class="line"><span class="comment">	 * support at present. For example, a value of &#123;<span class="doctag">@code</span> "ServletException"&#125; would</span></div><div class="line"><span class="comment">	 * match &#123;<span class="doctag">@code</span> javax.servlet.ServletException&#125; and its subclasses.</span></div><div class="line"><span class="comment">	 * &lt;p&gt;&lt;b&gt;NB:&lt;/b&gt; Consider carefully how specific the pattern is and whether</span></div><div class="line"><span class="comment">	 * to include package information (which isn't mandatory). For example,</span></div><div class="line"><span class="comment">	 * &#123;<span class="doctag">@code</span> "Exception"&#125; will match nearly anything and will probably hide other</span></div><div class="line"><span class="comment">	 * rules. &#123;<span class="doctag">@code</span> "java.lang.Exception"&#125; would be correct if &#123;<span class="doctag">@code</span> "Exception"&#125;</span></div><div class="line"><span class="comment">	 * were meant to define a rule for all checked exceptions. With more unusual</span></div><div class="line"><span class="comment">	 * &#123;<span class="doctag">@link</span> Exception&#125; names such as &#123;<span class="doctag">@code</span> "BaseBusinessException"&#125; there is no</span></div><div class="line"><span class="comment">	 * need to use a FQN.</span></div><div class="line"><span class="comment">	 * &lt;p&gt;Similar to &#123;<span class="doctag">@link</span> org.springframework.transaction.interceptor.RollbackRuleAttribute#RollbackRuleAttribute(String exceptionName)&#125;.</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> #rollbackFor</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> org.springframework.transaction.interceptor.DefaultTransactionAttribute#rollbackOn(Throwable)</span></div><div class="line"><span class="comment">	 */</span></div><div class="line">	String[] rollbackForClassName() <span class="keyword">default</span> &#123;&#125;;</div><div class="line"></div><div class="line">	<span class="comment">/**</span></div><div class="line"><span class="comment">	 * Defines zero (0) or more exception &#123;<span class="doctag">@link</span> Class Classes&#125;, which must be</span></div><div class="line"><span class="comment">	 * subclasses of &#123;<span class="doctag">@link</span> Throwable&#125;, indicating which exception types must</span></div><div class="line"><span class="comment">	 * &lt;b&gt;not&lt;/b&gt; cause a transaction rollback.</span></div><div class="line"><span class="comment">	 * &lt;p&gt;This is the preferred way to construct a rollback rule (in contrast</span></div><div class="line"><span class="comment">	 * to &#123;<span class="doctag">@link</span> #noRollbackForClassName&#125;), matching the exception class and</span></div><div class="line"><span class="comment">	 * its subclasses.</span></div><div class="line"><span class="comment">	 * &lt;p&gt;Similar to &#123;<span class="doctag">@link</span> org.springframework.transaction.interceptor.NoRollbackRuleAttribute#NoRollbackRuleAttribute(Class clazz)&#125;.</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> #noRollbackForClassName</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> org.springframework.transaction.interceptor.DefaultTransactionAttribute#rollbackOn(Throwable)</span></div><div class="line"><span class="comment">	 */</span></div><div class="line">	Class&lt;? extends Throwable&gt;[] noRollbackFor() <span class="keyword">default</span> &#123;&#125;;</div><div class="line"></div><div class="line">	<span class="comment">/**</span></div><div class="line"><span class="comment">	 * Defines zero (0) or more exception names (for exceptions which must be a</span></div><div class="line"><span class="comment">	 * subclass of &#123;<span class="doctag">@link</span> Throwable&#125;) indicating which exception types must &lt;b&gt;not&lt;/b&gt;</span></div><div class="line"><span class="comment">	 * cause a transaction rollback.</span></div><div class="line"><span class="comment">	 * &lt;p&gt;See the description of &#123;<span class="doctag">@link</span> #rollbackForClassName&#125; for further</span></div><div class="line"><span class="comment">	 * information on how the specified names are treated.</span></div><div class="line"><span class="comment">	 * &lt;p&gt;Similar to &#123;<span class="doctag">@link</span> org.springframework.transaction.interceptor.NoRollbackRuleAttribute#NoRollbackRuleAttribute(String exceptionName)&#125;.</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> #noRollbackFor</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> org.springframework.transaction.interceptor.DefaultTransactionAttribute#rollbackOn(Throwable)</span></div><div class="line"><span class="comment">	 */</span></div><div class="line">	String[] noRollbackForClassName() <span class="keyword">default</span> &#123;&#125;;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>给出spring的源码对照着看.</p>
+<h4 id="2-1-事务隔离级别"><a href="#2-1-事务隔离级别" class="headerlink" title="2.1 事务隔离级别"></a>2.1 事务隔离级别</h4><p>事务隔离级别是isolation属性，值是枚举类型Isolation，源码是</p>
+<p>Isolation.java<br><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="keyword">enum</span> Isolation &#123;</div><div class="line"></div><div class="line">	<span class="comment">/**</span></div><div class="line"><span class="comment">	 * Use the default isolation level of the underlying datastore.</span></div><div class="line"><span class="comment">	 * All other levels correspond to the JDBC isolation levels.</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> java.sql.Connection</span></div><div class="line"><span class="comment">	 */</span></div><div class="line">	DEFAULT(TransactionDefinition.ISOLATION_DEFAULT),</div><div class="line"></div><div class="line">	<span class="comment">/**</span></div><div class="line"><span class="comment">	 * A constant indicating that dirty reads, non-repeatable reads and phantom reads</span></div><div class="line"><span class="comment">	 * can occur. This level allows a row changed by one transaction to be read by</span></div><div class="line"><span class="comment">	 * another transaction before any changes in that row have been committed</span></div><div class="line"><span class="comment">	 * (a "dirty read"). If any of the changes are rolled back, the second</span></div><div class="line"><span class="comment">	 * transaction will have retrieved an invalid row.</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> java.sql.Connection#TRANSACTION_READ_UNCOMMITTED</span></div><div class="line"><span class="comment">	 */</span></div><div class="line">	READ_UNCOMMITTED(TransactionDefinition.ISOLATION_READ_UNCOMMITTED),</div><div class="line"></div><div class="line">	<span class="comment">/**</span></div><div class="line"><span class="comment">	 * A constant indicating that dirty reads are prevented; non-repeatable reads</span></div><div class="line"><span class="comment">	 * and phantom reads can occur. This level only prohibits a transaction</span></div><div class="line"><span class="comment">	 * from reading a row with uncommitted changes in it.</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> java.sql.Connection#TRANSACTION_READ_COMMITTED</span></div><div class="line"><span class="comment">	 */</span></div><div class="line">	READ_COMMITTED(TransactionDefinition.ISOLATION_READ_COMMITTED),</div><div class="line"></div><div class="line">	<span class="comment">/**</span></div><div class="line"><span class="comment">	 * A constant indicating that dirty reads and non-repeatable reads are</span></div><div class="line"><span class="comment">	 * prevented; phantom reads can occur. This level prohibits a transaction</span></div><div class="line"><span class="comment">	 * from reading a row with uncommitted changes in it, and it also prohibits</span></div><div class="line"><span class="comment">	 * the situation where one transaction reads a row, a second transaction</span></div><div class="line"><span class="comment">	 * alters the row, and the first transaction rereads the row, getting</span></div><div class="line"><span class="comment">	 * different values the second time (a "non-repeatable read").</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> java.sql.Connection#TRANSACTION_REPEATABLE_READ</span></div><div class="line"><span class="comment">	 */</span></div><div class="line">	REPEATABLE_READ(TransactionDefinition.ISOLATION_REPEATABLE_READ),</div><div class="line"></div><div class="line">	<span class="comment">/**</span></div><div class="line"><span class="comment">	 * A constant indicating that dirty reads, non-repeatable reads and phantom</span></div><div class="line"><span class="comment">	 * reads are prevented. This level includes the prohibitions in</span></div><div class="line"><span class="comment">	 * &#123;<span class="doctag">@code</span> ISOLATION_REPEATABLE_READ&#125; and further prohibits the situation</span></div><div class="line"><span class="comment">	 * where one transaction reads all rows that satisfy a &#123;<span class="doctag">@code</span> WHERE&#125;</span></div><div class="line"><span class="comment">	 * condition, a second transaction inserts a row that satisfies that</span></div><div class="line"><span class="comment">	 * &#123;<span class="doctag">@code</span> WHERE&#125; condition, and the first transaction rereads for the</span></div><div class="line"><span class="comment">	 * same condition, retrieving the additional "phantom" row in the second read.</span></div><div class="line"><span class="comment">	 * <span class="doctag">@see</span> java.sql.Connection#TRANSACTION_SERIALIZABLE</span></div><div class="line"><span class="comment">	 */</span></div><div class="line">	SERIALIZABLE(TransactionDefinition.ISOLATION_SERIALIZABLE);</div><div class="line"></div><div class="line"></div><div class="line">	<span class="keyword">private</span> <span class="keyword">final</span> <span class="keyword">int</span> value;</div><div class="line"></div><div class="line"></div><div class="line">	Isolation(<span class="keyword">int</span> value) &#123; <span class="keyword">this</span>.value = value; &#125;</div><div class="line"></div><div class="line">	<span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">value</span><span class="params">()</span> </span>&#123; <span class="keyword">return</span> <span class="keyword">this</span>.value; &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure></p>
+<p>default就是使用数据库本身的事务隔离级别，其余的就是对照前面所说的。</p>
+<h4 id="2-2-事务传播级别"><a href="#2-2-事务传播级别" class="headerlink" title="2.2 事务传播级别"></a>2.2 事务传播级别</h4><p>事务传播级别是propagation属性，他的值是Propagation枚举类别，这个类别有如下几个值：</p>
+<ol>
+<li>REQUIRED，配置这个时如果当前存在事务，则加入该事务，否则创建事务，这个时默认值</li>
+<li>SUPPORTS，如果存在事务则加入，否则以非事务方式运行</li>
+<li>MANDATORY，加入当前事务，如果不存在则抛异常</li>
+<li>REQUIRES_NEW，创建事务，如果当前存在，则将当前事务挂起</li>
+<li>NOT_SUPPORTED，非事务方式运行，如果当前存在事务，则将之挂起</li>
+<li>NEVER，非事务方式运行，如果事务存在则抛异常</li>
+<li>NESTED，创建一个事务，如果当前存在事务，则将它包含在这个事务里嵌套运行</li>
+</ol>
+<h4 id="2-3-事务超时"><a href="#2-3-事务超时" class="headerlink" title="2.3 事务超时"></a>2.3 事务超时</h4><p>timeout，超时了则回滚，默认值-1则表示永不超时</p>
+<h4 id="2-4-事务回滚原则"><a href="#2-4-事务回滚原则" class="headerlink" title="2.4 事务回滚原则"></a>2.4 事务回滚原则</h4><p>rollbackForClassName和rollbackFor，前者是类名，后者是类，如果发生了该异常则回滚</p>
+<p>noRollbackForClassName和noRollbackFor，和上面正好相反，如果发生了该异常不回滚</p>
+<h3 id="3-总结"><a href="#3-总结" class="headerlink" title="3 总结"></a>3 总结</h3><p>事务其实很容易了解，稍微做点联想就明白事务的特征，和容易出现问题的地方，然后针对这些地方数据库或者程序会有哪些举措去面对，然后对照着就明白了spring的这些配置到底何用。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-3/" data-id="cj8vqggr50010929ezuesery4" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
   
     <article id="post-lerning-spring-2" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
@@ -134,7 +227,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-2/" data-id="cj8rhth4j0016s59ew1rhtr6s" class="article-share-link">Partager</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-2/" data-id="cj8vqggqw000t929ed763uqhw" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
@@ -209,7 +302,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/27/lerning-spring-1/" data-id="cj8rhth4c0011s59e0amnkgjs" class="article-share-link">Partager</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/27/lerning-spring-1/" data-id="cj8vqggqy000u929ep3omdw2d" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
@@ -304,7 +397,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/26/dubbo-testing-1/" data-id="cj8rhth2q0000s59eht1idc52" class="article-share-link">Partager</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/26/dubbo-testing-1/" data-id="cj8vqggnz0000929eh53ox8kc" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li></ul>
@@ -370,7 +463,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/25/zookeeper-testing-2/" data-id="cj8rhth4y001ls59eb1lu87qj" class="article-share-link">Partager</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/25/zookeeper-testing-2/" data-id="cj8vqggrl001h929e94vxwd01" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li></ul>
@@ -429,7 +522,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/24/zookeeper-testing-1/" data-id="cj8rhth51001ps59ewkh5k108" class="article-share-link">Partager</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/24/zookeeper-testing-1/" data-id="cj8vqggra0017929ecoz4fhth" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li></ul>
@@ -500,75 +593,10 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/22/how-to-use-activeMq-3/" data-id="cj8rhth43000ss59efo079ydp" class="article-share-link">Partager</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/22/how-to-use-activeMq-3/" data-id="cj8vqggqj000k929e9waro17j" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-how-to-use-activeMq-2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/lgb-blog/2017/09/21/how-to-use-activeMq-2/" class="article-date">
-  <time datetime="2017-09-21T11:54:07.000Z" itemprop="datePublished">2017-09-21</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/lgb-blog/categories/activeMq/">activeMq</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/lgb-blog/2017/09/21/how-to-use-activeMq-2/">使用activeMq(二)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="activeMq-结合-spring"><a href="#activeMq-结合-spring" class="headerlink" title="activeMq 结合 spring"></a>activeMq 结合 spring</h2><p>spring已差不多成为java项目的标配了，它的核心两大功能aop与ioc让它变得像一个万用插头，什么都能够搭配起来，jms当然不在话下。</p>
-<p>本文将讲解spring与jms的结合，而此jms产品自然选择的是activeMq。</p>
-<p>spring与jms结合有几个步骤，习惯了spring用annotation方式，所以我这里也是如此，没有使用xml配置文件。</p>
-<p>首先，写配置类：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Configuration</span></div><div class="line"><span class="meta">@EnableJms</span></div><div class="line"><span class="meta">@ComponentScan</span>(basePackages = &#123;<span class="string">"basepackage"</span>&#125;)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AppConfig</span> </span>&#123;</div><div class="line"></div><div class="line">     ... </div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>像普通的配置类一样，但需要加一个@EnableJms进来.</p>
-<p>然后是配置jmsListenerContainerFactory, 注意如果使用上面那个annotation，就应该用这个factory，当然实际上这个只是为了consumer使用，如果只配置producer就不需要，下面有讲述。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">        <span class="meta">@Bean</span></div><div class="line">        <span class="function"><span class="keyword">public</span> DefaultJmsListenerContainerFactory <span class="title">jmsListenerContainerFactory</span><span class="params">()</span> </span>&#123;</div><div class="line">            DefaultJmsListenerContainerFactory factory =</div><div class="line">                    <span class="keyword">new</span> DefaultJmsListenerContainerFactory();</div><div class="line">            factory.setConnectionFactory(connectionFactory());</div><div class="line">            factory.setConcurrency(<span class="string">"3-10"</span>);</div><div class="line"><span class="comment">//            factory.setPubSubDomain(true);  1</span></div><div class="line">    </div><div class="line">            <span class="keyword">return</span> factory;</div><div class="line">        &#125;</div></pre></td></tr></table></figure>
-<p>如果把1那个注释去掉，那么是发布订阅模式，否则是点对点（这个需要看情况，这里是activemq，有两类，还有的jms框架，只有一类）</p>
-<p>这里有一个方法 connectorFactory()，实际上它就是实际要使用的jms的connectionFactory，代码如下:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Bean</span></div><div class="line"><span class="function"><span class="keyword">public</span> ConnectionFactory <span class="title">connectionFactory</span><span class="params">()</span> </span>&#123;</div><div class="line">    SingleConnectionFactory singleConnectionFactory = <span class="keyword">new</span> SingleConnectionFactory();</div><div class="line">    singleConnectionFactory.setTargetConnectionFactory(<span class="keyword">new</span> ActiveMQConnectionFactory());</div><div class="line">    <span class="keyword">return</span> singleConnectionFactory;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>我返回的是singleConnectionFactory，它是spring定义的一个factory，其实只是一个代理类（静态代理），实际使用的是new ActiveMQConnectionFactory().</p>
-<p>配置可以说到这里就结束了，如果你只需要接受消息的话。但接受消息的代码还没写呢，这里有两种方式，第一是在配置类中实现接口JmsListenerConfigurer, 如下:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Configuration</span></div><div class="line"><span class="meta">@EnableJms</span></div><div class="line"><span class="meta">@ComponentScan</span>(basePackages = &#123;<span class="string">"basepackage"</span>&#125;)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AppConfig</span> <span class="keyword">implements</span> <span class="title">JmsListenerConfigurer</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Logger logger = LoggerFactory.getLogger(AppConfig.class);</div><div class="line">    </div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">configureJmsListeners</span><span class="params">(JmsListenerEndpointRegistrar registrar)</span> </span>&#123;</div><div class="line">            <span class="comment">// 测试register是干嘛的</span></div><div class="line">    </div><div class="line">            SimpleJmsListenerEndpoint endpoint = <span class="keyword">new</span> SimpleJmsListenerEndpoint();</div><div class="line">            endpoint.setId(<span class="string">"myJmsEndpoint"</span>);</div><div class="line">            endpoint.setDestination(<span class="string">"aaa"</span>);</div><div class="line">            endpoint.setMessageListener(message -&gt; &#123;</div><div class="line">                System.out.println(message);</div><div class="line">                <span class="comment">// processing</span></div><div class="line">                <span class="keyword">if</span> (message <span class="keyword">instanceof</span> TextMessage) &#123;</div><div class="line">                    <span class="keyword">try</span> &#123;</div><div class="line">                        logger.info(<span class="string">"receive message: &#123;&#125;"</span>, ((TextMessage) message).getText());</div><div class="line">                    &#125; <span class="keyword">catch</span> (JMSException e) &#123;</div><div class="line">                        e.printStackTrace();</div><div class="line">                    &#125;</div><div class="line">                &#125; <span class="keyword">else</span> &#123;</div><div class="line">                    logger.info(<span class="string">"unknown message"</span>);</div><div class="line">                &#125;</div><div class="line">            &#125;);</div><div class="line">            registrar.registerEndpoint(endpoint);</div><div class="line">        &#125;</div><div class="line"></div><div class="line">     ... </div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这种事统一配置一个destination的消息处理，还有一种就是在component的方法中加一个Annotation @JmsListener(destination = “xxx”)，代码如下:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@Component</span></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">MyService</span> </span>&#123;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> Logger logger = LoggerFactory.getLogger(MyService.class);</div><div class="line"></div><div class="line">    <span class="meta">@Autowired</span></div><div class="line">    <span class="keyword">private</span> JmsTemplate jmsTemplate;</div><div class="line"></div><div class="line">    </div><div class="line">    <span class="meta">@JmsListener</span>(destination = <span class="string">"aaa"</span>)</div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">aaaReceiveMessage</span><span class="params">(TextMessage name)</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            String msg = name.getText();</div><div class="line">            logger.info(<span class="string">"aaa message: &#123;&#125;, receive time: &#123;&#125;"</span>, msg, <span class="keyword">new</span> Date(name.getJMSTimestamp()));</div><div class="line">        &#125; <span class="keyword">catch</span> (JMSException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="meta">@JmsListener</span>(destination = <span class="string">"aaa2"</span>)</div><div class="line">    <span class="comment">//这个什么用呢</span></div><div class="line">    <span class="meta">@SendTo</span>(<span class="string">"aaa"</span>)</div><div class="line">    <span class="function"><span class="keyword">public</span> Message&lt;String&gt; <span class="title">aaa2ReceiveMessageAndSendToAaa</span><span class="params">(TextMessage name)</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            String msg = name.getText();</div><div class="line">            logger.info(<span class="string">"aaa2 message: &#123;&#125;, receive time: &#123;&#125;"</span>, msg, <span class="keyword">new</span> Date(name.getJMSTimestamp()));</div><div class="line">            <span class="keyword">return</span> MessageBuilder.withPayload(msg).build();</div><div class="line">        &#125; <span class="keyword">catch</span> (JMSException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">            <span class="keyword">return</span> <span class="keyword">null</span>;</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">aaa2SendMessage</span><span class="params">(<span class="keyword">final</span> String name)</span> </span>&#123;</div><div class="line"><span class="comment">//        logger.info("message2:&#123;&#125;", name.getPayload());</span></div><div class="line">        jmsTemplate.convertAndSend(<span class="string">"aaa2"</span>,name);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>这段代码后面也要用到，我们先看aaaReceiveMessage方法，这个加了一个JmsListener(destination = “aaa”),也就是当接受到一个destination（也就是topic或者点对点情况下的queue）叫做”aaa”的TextMessage消息时，会执行该方法。</p>
-<p>然后再看aaa2ReceiveMessageAndSendToAaa方法还有一个@SendTo(“aaa)，这个是接受到这个消息后，然后把返回的值发送到destination为”aaa”的队列中取，经测试，如果没有@JmsListener，只有一个SentTo，执行该方法是不会把消息发送到消息队列中的。发送消息要我接下来说的JmsTemplate。</p>
-<p>要使用JmsTemplate，自然要先添加这个bean，代码如下:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line">    <span class="meta">@Bean</span></div><div class="line">        <span class="function"><span class="keyword">public</span> JmsTemplate <span class="title">jmsTemplate</span><span class="params">()</span> </span>&#123;</div><div class="line">            JmsTemplate jmsTemplate = <span class="keyword">new</span> JmsTemplate();</div><div class="line">            jmsTemplate.setConnectionFactory(connectionFactory());</div><div class="line">            jmsTemplate.setDefaultDestinationName(<span class="string">"aaa2"</span>);</div><div class="line"><span class="comment">//            jmsTemplate.setPubSubDomain(true); 2</span></div><div class="line">            <span class="keyword">return</span> jmsTemplate;</div><div class="line">        &#125;</div></pre></td></tr></table></figure>
-<p>同样如果要采用pub/sub，就要写上注释2</p>
-<p>然后使用方式就如上面的代码中最下面那个aaa2SendMessage方法一样，当然JmsTemplate有几类方式创建发送消息，这里采取的方式相对较简单。</p>
-<p>spring结合jms的简单使用就完成了，当然实际情况会更复杂，这些还有很多配置项可以去配置，大家可以做下测试，我就不详述了。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/21/how-to-use-activeMq-2/" data-id="cj8rhth380006s59egtjtofc6" class="article-share-link">Partager</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
 
     </footer>
   </div>
@@ -623,7 +651,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/21/how-to-use-activeMq-1/" data-id="cj8rhth330004s59eor0bot2n" class="article-share-link">Partager</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/21/how-to-use-activeMq-1/" data-id="cj8vqggpa0005929erkbbjbcn" class="article-share-link">Share</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li></ul>
@@ -646,7 +674,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Catégories</h3>
+    <h3 class="widget-title">Categories</h3>
     <div class="widget">
       <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/activeMq/">activeMq</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/dubbo/">dubbo</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/java/">java</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/spring/">spring</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/zookeeper/">zookeeper</a></li></ul>
     </div>
@@ -656,9 +684,9 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Mot-clés</h3>
+    <h3 class="widget-title">Tags</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/Nio/">Nio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jvm/">jvm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-cloud/">spring cloud</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/ForkJoin/">ForkJoin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/Nio/">Nio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jvm/">jvm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-cloud/">spring cloud</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/并发/">并发</a></li></ul>
     </div>
   </div>
 
@@ -666,9 +694,9 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Nuage de mot-clés</h3>
+    <h3 class="widget-title">Tag Cloud</h3>
     <div class="widget tagcloud">
-      <a href="/lgb-blog/tags/Nio/" style="font-size: 10px;">Nio</a> <a href="/lgb-blog/tags/activeMq/" style="font-size: 15px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 17.5px;">dubbo</a> <a href="/lgb-blog/tags/hessian/" style="font-size: 12.5px;">hessian</a> <a href="/lgb-blog/tags/java/" style="font-size: 10px;">java</a> <a href="/lgb-blog/tags/jms/" style="font-size: 15px;">jms</a> <a href="/lgb-blog/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/rpc/" style="font-size: 10px;">rpc</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-cloud/" style="font-size: 10px;">spring cloud</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 12.5px;">zookeeper</a>
+      <a href="/lgb-blog/tags/ForkJoin/" style="font-size: 10px;">ForkJoin</a> <a href="/lgb-blog/tags/Nio/" style="font-size: 10px;">Nio</a> <a href="/lgb-blog/tags/activeMq/" style="font-size: 13.33px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 16.67px;">dubbo</a> <a href="/lgb-blog/tags/hessian/" style="font-size: 13.33px;">hessian</a> <a href="/lgb-blog/tags/java/" style="font-size: 10px;">java</a> <a href="/lgb-blog/tags/jms/" style="font-size: 13.33px;">jms</a> <a href="/lgb-blog/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/rpc/" style="font-size: 10px;">rpc</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-cloud/" style="font-size: 10px;">spring cloud</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a> <a href="/lgb-blog/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/lgb-blog/tags/并发/" style="font-size: 10px;">并发</a>
     </div>
   </div>
 
@@ -685,9 +713,13 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Articles récents</h3>
+    <h3 class="widget-title">Recent Posts</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/17/merge-sort-by-fork-join/">fork-join来实现排序算法</a>
+          </li>
         
           <li>
             <a href="/lgb-blog/2017/10/14/java-base-1/">java基础只类加载机制</a>
@@ -705,10 +737,6 @@
             <a href="/lgb-blog/2017/10/10/nio-1/">nio-1</a>
           </li>
         
-          <li>
-            <a href="/lgb-blog/2017/10/03/lerning-spring-5/">spring学习（五）</a>
-          </li>
-        
       </ul>
     </div>
   </div>
@@ -722,7 +750,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 刘国兵<br>
-      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
