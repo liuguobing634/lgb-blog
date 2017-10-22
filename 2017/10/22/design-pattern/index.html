@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>聊聊设计模式 | 刘国兵的博客</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="前言熟悉java的人应该都知道，java有23种设计模式，按照不同的用途，分为以下三类：  创建型：抽象工厂、工厂方法、建造者、原型与单例 结构型：适配器、桥接、组合、外观、装饰者、享元、代理 行为型：责任链、命令、解释器、迭代、中介者、备忘录、观察者、状态、策略、模板方法、访问者  挑几个我常用的讲一下，之后的慢慢再说： 一、创建型1. 工厂（包括抽象工厂和工厂方法）工厂模式，顾名思义就是像工厂">
+<meta name="keywords" content="设计模式">
+<meta property="og:type" content="article">
+<meta property="og:title" content="聊聊设计模式">
+<meta property="og:url" content="http://liuguobing634.github.io/lgb-blog/2017/10/22/design-pattern/index.html">
+<meta property="og:site_name" content="刘国兵的博客">
+<meta property="og:description" content="前言熟悉java的人应该都知道，java有23种设计模式，按照不同的用途，分为以下三类：  创建型：抽象工厂、工厂方法、建造者、原型与单例 结构型：适配器、桥接、组合、外观、装饰者、享元、代理 行为型：责任链、命令、解释器、迭代、中介者、备忘录、观察者、状态、策略、模板方法、访问者  挑几个我常用的讲一下，之后的慢慢再说： 一、创建型1. 工厂（包括抽象工厂和工厂方法）工厂模式，顾名思义就是像工厂">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2017-10-22T04:57:40.000Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="聊聊设计模式">
+<meta name="twitter:description" content="前言熟悉java的人应该都知道，java有23种设计模式，按照不同的用途，分为以下三类：  创建型：抽象工厂、工厂方法、建造者、原型与单例 结构型：适配器、桥接、组合、外观、装饰者、享元、代理 行为型：责任链、命令、解释器、迭代、中介者、备忘录、观察者、状态、策略、模板方法、访问者  挑几个我常用的讲一下，之后的慢慢再说： 一、创建型1. 工厂（包括抽象工厂和工厂方法）工厂模式，顾名思义就是像工厂">
+  
+    <link rel="alternate" href="/atom.xml" title="刘国兵的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/lgb-blog/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/lgb-blog/" id="logo">刘国兵的博客</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/lgb-blog/" id="subtitle">技术无止境</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/lgb-blog/">Home</a>
+        
+          <a class="main-nav-link" href="/lgb-blog/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liuguobing634.github.io/lgb-blog"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-design-pattern" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lgb-blog/2017/10/22/design-pattern/" class="article-date">
+  <time datetime="2017-10-22T01:20:20.000Z" itemprop="datePublished">2017-10-22</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      聊聊设计模式
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h1 id="前言"><a href="#前言" class="headerlink" title="前言"></a>前言</h1><p>熟悉java的人应该都知道，java有23种设计模式，按照不同的用途，分为以下三类：</p>
+<ol>
+<li>创建型：抽象工厂、工厂方法、建造者、原型与单例</li>
+<li>结构型：适配器、桥接、组合、外观、装饰者、享元、代理</li>
+<li>行为型：责任链、命令、解释器、迭代、中介者、备忘录、观察者、状态、策略、模板方法、访问者</li>
+</ol>
+<p>挑几个我常用的讲一下，之后的慢慢再说：</p>
+<h1 id="一、创建型"><a href="#一、创建型" class="headerlink" title="一、创建型"></a>一、创建型</h1><h2 id="1-工厂（包括抽象工厂和工厂方法）"><a href="#1-工厂（包括抽象工厂和工厂方法）" class="headerlink" title="1. 工厂（包括抽象工厂和工厂方法）"></a>1. 工厂（包括抽象工厂和工厂方法）</h2><p>工厂模式，顾名思义就是像工厂生产产品那样生产出对象，而不是用户直接去new，那为什么需要这样做呢？</p>
+<p>与一个对象相关的职责通常有三类：对象本身所具有的职责、创建对象的职责和使用对象的职责。</p>
+<p>通常一个类中会包含另一个类的对象，而这个类的对象要么就是通过构造函数传递，要么就是自己生成。如果是通过构造函数所传递，那么对于这个类的使用者来说（假设这个系统是一个lib，为别人所用），会觉得很麻烦，他还得去看传递的类对象如何构造，所以经常很多时候可能采取的是后者，那我们来看看后者会出现一些什么问题。</p>
+<p>现在先看一个场景，一个用户需要写字，写字的笔有多种多样，钢笔、铅笔、圆珠笔、中性笔等等，先暂时只有两类笔，现在假设在构造用户的时候指定了一只笔,通过传递数字进去（可以改成枚举更形象）表示使用哪样的笔，不使用工场模式情况如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">User</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> Pen pen;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="title">User</span><span class="params">(<span class="keyword">int</span> type)</span> </span>&#123;</div><div class="line">        <span class="keyword">switch</span> (type) &#123;</div><div class="line">            <span class="keyword">case</span> Pen.PENCIL: </div><div class="line">                pen = <span class="keyword">new</span> Pencil();</div><div class="line">                <span class="keyword">break</span>;</div><div class="line">            <span class="keyword">default</span>:</div><div class="line">                pen = <span class="keyword">new</span> FountainPen();    </div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">write</span><span class="params">()</span> </span>&#123;</div><div class="line">        pen.write();</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>其他类省略。</p>
+<p>这样很好很完美的使用。但是假如哪天我们的系统变得越来越丰富，笔的种类也越来越多，我们没创建出一只笔，就需要改一次User，当然其实这也无所谓，但设想这样的情况，假设我们的系统这两个库之间是分开的，甚至可能是分布式的存放在不同的位置，例如我们将user所在的部分分发给用户，但生产pen的部分存放在我们自己的服务器里，user创建pen需要通过rpc或者rmi等远程手段，那样我们如果每次改动，用户都需要升级系统，显然对用户来说不友好。</p>
+<p>还有一种情况，假设需要用到笔的类不止user一个，那么改动的代码就显然不止user一个类，这样就造成了更多的麻烦。</p>
+<p>从开发的哲学来说，这样也违反了开闭原则与单一职责原则。所以这里我们就需要工厂模式，将类的生成交给工厂。</p>
+<p>工厂模式其实大致上有三类：简单工厂、抽象工厂与工厂方法。</p>
+<p>简单工厂并没有被归结于23种设计模式中，它其实也是违背了开闭原则。简单工厂，其实就是把上面User的构造方法部分代码放到工厂中的一个静态方法里，显然如果我们新出一款笔，那么就需要改动这个类的方法了，系统内部违反了开闭原则，没有很好的扩展性。</p>
+<p>我不太懂工厂方法，百度到的基本上都是简单工厂，我的猜测是把简单工厂中通过一个方法创建改成多种方法创建，通过不同的方法名来创建不同的对象，每次产生一个新的类就创建一个新的工厂方法，不需要改动原来的方法（在一些语言中，方法可以在类之外扩展，这种就更加方便了）。</p>
+<p>抽象工厂比较复杂，先创建一个抽象的工厂类，然后为每一个类都创建一个工厂类继承自该抽象工厂类。扩展性较好，在系统内部不违背开闭原则（客户端方可能违反了该原则）。</p>
+<h2 id="2-单例模式"><a href="#2-单例模式" class="headerlink" title="2. 单例模式"></a>2. 单例模式</h2><p>单例模式也是构造模式之一，它的应用场景就是很简单，系统只需要它的一个实例的地方就可以用到单例模式。那系统什么时候只需要类的一个实例呢？我的总结如下：</p>
+<ol>
+<li>对象的创建很耗时，但又经常需要，可以使用单例（比如数据库连接池，线程池等）。</li>
+<li>对象的状态或资源被系统很多模块所共享可以使用单例（比如网站计数器共享状态、日志共享文件等）。</li>
+<li>对象无状态，或者状态不会轻易改变，只有方法调用，其实也可以使用单例，这样比较省空间（比如spring托管的bean，默认为单例）。</li>
+</ol>
+<p>单例模式有着明显的缺陷，因为只有它一个对象，但又被很多模块引用，在多线程环境下，这个对象就是一个稀缺资源，于是会产生多线程那些常见的问题，比如数据脏读，比如死锁等等。最常见的就是这个单例的产生，因为很可能会产生了多个实例，而不是真正的单例。</p>
+<p>单例模式对象的创建就会有以下两种：</p>
+<ol>
+<li>懒汉模式，直到需要这个对象时才会去创建，但这会有线程安全问题，一般采取双重检测来避免，方式是先判断对象是否为空，为空的话，获取对象的类的锁，然后再次判断对象师傅为空，这样做一定情况下是可以避免线程安全问题，但是第一次创建就会比较慢，加上java的重排机制和内存模型，有一定几率会失败。</li>
+<li>饿汉模式，直接创建一个static的对象，然后给出一个方法返回该对象，这样是绝对线程安全的，因为static代码块会在类加载时就执行，但会出现一些资源浪费的问题，比如该对象一直没被使用，但它在内存始终存在着（如果对象没被设置为null，java不会对其gc，因为它认为该对象还有用，其次假如会gc，那样会造成更大的麻烦不是吗）。</li>
+</ol>
+<h2 id="3-建造者模式"><a href="#3-建造者模式" class="headerlink" title="3. 建造者模式"></a>3. 建造者模式</h2><p>现实中一个产品往往由多个组件组成，建造者模式就是为此而生。每个建造者把这些组件部分实现，然后组装成产品，使用者只需要告诉使用哪种建造者就行。扩展性较好，内部系统也符合开闭原则，符合依赖倒置原则。</p>
+<h2 id="4-原型模式"><a href="#4-原型模式" class="headerlink" title="4.原型模式"></a>4.原型模式</h2><p>原型模式就是从一个既有的对象生成新的对象，原理很简单，实现也很简单，就是clone，不过有深浅拷贝的说法，本文不细谈。</p>
+<h1 id="二、行为型"><a href="#二、行为型" class="headerlink" title="二、行为型"></a>二、行为型</h1><h2 id="5-适配器模式"><a href="#5-适配器模式" class="headerlink" title="5.适配器模式"></a>5.适配器模式</h2><p>可以类比为现实中的一些适配器，如数据线转换器（不同的接口）、插头适配器（比如香港的和内地的插头不一样）等。其实就是原来的接口不符合需要的，但我们又需要原有的接口，那么就用适配器模式。旧系统升级可以采取该模式。</p>
+<h2 id="6-桥接模式"><a href="#6-桥接模式" class="headerlink" title="6.桥接模式"></a>6.桥接模式</h2><p>桥接模式，桥接模式是将抽象部分与它的实现部分分离开来，使他们都可以独立变化。比如有这样的一个例子，一个图形有形状和颜色之分，比如现在提供两种形状圆形和方形，三种颜色白色、黑色和黄色，现在要实现这些就需要创建六个子类，而一旦增加一种颜色则需要再创建两种子类，创建一个形状需要在创建三种子类，随着类型和颜色的增多，后续的升级更加复杂，这时我们可以将颜色抽象出来，单独作为一个抽象类，然后创建三种颜色，构造形状是传递相应的颜色即可，而形状部分则只需要两个实现类了。</p>
+<p>桥接模式符合单一继承原则，如果一个模块需要两个维度的变化，那么就可以使用桥接模式。</p>
+<h2 id="7-组合模式"><a href="#7-组合模式" class="headerlink" title="7.组合模式"></a>7.组合模式</h2><p>组合模式是将对象组合成树形结构以表示”整体-部分”的层次结构。Composite模式使得用户对单个对象和组合对象的使用具有一致性。</p>
+<h2 id="8-外观模式"><a href="#8-外观模式" class="headerlink" title="8.外观模式"></a>8.外观模式</h2><p>外观模式，将内部子系统统一起来给外部提供一个一致的画面，让客户端不去烦恼调用哪个子系统。</p>
+<h2 id="9-装饰者模式"><a href="#9-装饰者模式" class="headerlink" title="9.装饰者模式"></a>9.装饰者模式</h2><p>装饰者模式就是对一个原有的类的方法进行扩展，通过继承的方式，覆盖父类方法时添加新的语句进去，或者通过传递一个实现统一接口或者抽象类的对象，然后调用者对象方法的同时再添加其他代码。</p>
+<h2 id="10-享元模式"><a href="#10-享元模式" class="headerlink" title="10.享元模式"></a>10.享元模式</h2><p>池化技术很多采用的这种模式，就是我预先创建所需要的对象的个数，然后使用者就直接在我这里获取就行了，不用再去构造。（当然也可以不预先创建，而是第一次使用时创建，然后保存起来）。</p>
+<h2 id="11-代理模式"><a href="#11-代理模式" class="headerlink" title="11. 代理模式"></a>11. 代理模式</h2><p>代理模式分为静态代理和动态代理，静态代理就是先构造一个被代理对象，然后实现接口方法时，加上其他代码，然后调用该对象该方法。（有点像装饰者模式）</p>
+<p>动态代理就是采用反射机制或者cglib这样的字节码技术对类的方法进行代理访问。</p>
+<p>代理模式跟装饰者区别是：代理模式主要是控制对某个特定对象访问，而装饰模式主要是为了给对象添加行为。</p>
+<h1 id="三、行为型"><a href="#三、行为型" class="headerlink" title="三、行为型"></a>三、行为型</h1><h2 id="12-责任链模式"><a href="#12-责任链模式" class="headerlink" title="12. 责任链模式"></a>12. 责任链模式</h2><p>链，顾名思义就是很多个东西绑在一起，责任链也就很好理解了，那就是这条链上的对象都只负责他所需要的责任，然后传递给链上的下一个对象，filter、spring拦截器等就是责任链模式。</p>
+<h2 id="13-命令模式"><a href="#13-命令模式" class="headerlink" title="13.命令模式"></a>13.命令模式</h2><p>命令模式把一个请求或者操作封装到一个对象中。命令模式允许系统使用不同的请求把客户端参数化，对请求排队或者记录请求日志，可以提供命令的撤销和恢复功能。（个人没怎么研究过）</p>
+<h2 id="14-解释器模式"><a href="#14-解释器模式" class="headerlink" title="14. 解释器模式"></a>14. 解释器模式</h2><p>给定一个语言，定义它的文法的一种表示，并定义一个解释器，这个解释器使用该表示来解释语言中的句子。</p>
+<p>　　①文法：即语法规则。在解释器模式中每一个语法都将对应一个解释器对象，用来处理相应的语法规则。它对于扩展、改变文法以及增加新的文法规则都很方便。</p>
+<p>　　②解释器模式描述了如何为简单的语言定义一个文法，如何在该语言中表示一个句子，以及如何解释这些句子。</p>
+<p>　　③在解释器模式中可以通过一种称之为抽象语法树(Abstract Syntax Tree, AST)的图形方式来直观地表示语言的构成，每一棵抽象语法树对应一个语言实例</p>
+<h2 id="15-迭代模式"><a href="#15-迭代模式" class="headerlink" title="15.迭代模式"></a>15.迭代模式</h2><p>提供一种方法顺序访问一个聚合对象中的各种元素，而又不暴露该对象的内部表示。显然java的各种集合的访问就是迭代器模式。</p>
+<h2 id="16-中介着模式"><a href="#16-中介着模式" class="headerlink" title="16.中介着模式"></a>16.中介着模式</h2><p>将原本一个很复杂的关系网通过一个中介来维持。</p>
+<p>比如A对B说话，A先对中介说，然后中介告诉B，解耦了A与B之间的联系。</p>
+<h2 id="17-备忘录模式"><a href="#17-备忘录模式" class="headerlink" title="17.备忘录模式"></a>17.备忘录模式</h2><p>在不破坏封装性的前提下，捕获一个对象的内部状态，并在该对象之外保存这个状态。这样就可以将该对象恢复到原先保存的状态。jdbc的事务操作可以算是备忘录模式。</p>
+<h2 id="18-观察者模式"><a href="#18-观察者模式" class="headerlink" title="18.观察者模式"></a>18.观察者模式</h2><p>观察者模式就是被观察对象的变化引起观察对象的行为。一般是通过一个列表保存观察者，然后被观察者对象发送变化时，通知观察者。</p>
+<p>本人曾经对这个模式发表了一系列文章，地址是（<a href="https://www.blog-china.cn/liuguobing/home/89/1491013628099）" target="_blank" rel="external">https://www.blog-china.cn/liuguobing/home/89/1491013628099）</a></p>
+<h2 id="19-状态模式"><a href="#19-状态模式" class="headerlink" title="19.状态模式"></a>19.状态模式</h2><p>当一个对象的内在状态改变时允许改变其行为，这个对象看起来像是改变了其类。行为改变状态，状态决定行为。</p>
+<h2 id="20-策略模式"><a href="#20-策略模式" class="headerlink" title="20.策略模式"></a>20.策略模式</h2><p>策略模式是对算法的封装，它把算法的责任和算法本身分割开，委派给不同的对象管理。</p>
+<p>跟工厂模式区别在于策略模式是要传递具体的策略类对象过去，而工厂模式则是传递一个参数，根据参数自己构造该对象。客户必须知道有哪些策略，而工厂模式则不需要（只需要个用户一个说明书，表示传什么参数有什么功能之类的）。</p>
+<p>跟状态模式区别是状态内部会改变，外部无法改，策略只能外部改变（或者内外部都无法改，只能初始指定策略）。</p>
+<h2 id="21-模板方法模式"><a href="#21-模板方法模式" class="headerlink" title="21.模板方法模式"></a>21.模板方法模式</h2><p>抽象类实现模板方法，并提供几个抽象方法，模板方法中调用这些抽象方法，实现类来实现这些抽象方法。</p>
+<h2 id="22-访问者模式"><a href="#22-访问者模式" class="headerlink" title="22.访问者模式"></a>22.访问者模式</h2><p>封装某些作用于某种数据结构中各元素的操作，它可以在不改变数据结构的前提下定义作用于这些元素的新的操作。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/22/design-pattern/" data-id="cj92acqua00003g9ei21i5ww2" class="article-share-link">Share</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/设计模式/">设计模式</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/lgb-blog/2017/10/17/merge-sort-by-fork-join/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Older</strong>
+      <div class="article-nav-title">fork-join来实现排序算法</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/activeMq/">activeMq</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/dubbo/">dubbo</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/java/">java</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/spring/">spring</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/zookeeper/">zookeeper</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tags</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/ForkJoin/">ForkJoin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/Nio/">Nio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jvm/">jvm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-cloud/">spring cloud</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/并发/">并发</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/设计模式/">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Tag Cloud</h3>
+    <div class="widget tagcloud">
+      <a href="/lgb-blog/tags/ForkJoin/" style="font-size: 10px;">ForkJoin</a> <a href="/lgb-blog/tags/Nio/" style="font-size: 10px;">Nio</a> <a href="/lgb-blog/tags/activeMq/" style="font-size: 13.33px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 16.67px;">dubbo</a> <a href="/lgb-blog/tags/hessian/" style="font-size: 13.33px;">hessian</a> <a href="/lgb-blog/tags/java/" style="font-size: 10px;">java</a> <a href="/lgb-blog/tags/jms/" style="font-size: 13.33px;">jms</a> <a href="/lgb-blog/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/rpc/" style="font-size: 10px;">rpc</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-cloud/" style="font-size: 10px;">spring cloud</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a> <a href="/lgb-blog/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/lgb-blog/tags/并发/" style="font-size: 10px;">并发</a> <a href="/lgb-blog/tags/设计模式/" style="font-size: 10px;">设计模式</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Recent Posts</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/22/design-pattern/">聊聊设计模式</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/17/merge-sort-by-fork-join/">fork-join来实现排序算法</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/14/java-base-1/">java基础只类加载机制</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/14/dubbo-testing-3/">dubbo学习（三）</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/13/dubbo-testing-2/">dubbo试用之源码分析（一）</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 刘国兵<br>
+      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/lgb-blog/" class="mobile-nav-link">Home</a>
+  
+    <a href="/lgb-blog/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/lgb-blog/fancybox/jquery.fancybox.css">
+  <script src="/lgb-blog/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/lgb-blog/js/script.js"></script>
+
+  </div>
+</body>
+</html>
