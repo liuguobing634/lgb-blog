@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>java开发中的锁（一） | 刘国兵的博客</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="在开发中难免会出现需要多线程多并发的情况，而这种情况下，数据的操作就会需要锁机制了，java开发中有各种各样的锁，本系列文章将会一一将到，既包含jdk本身的单机锁，也有分布式相关的锁。 首先我们来看jdk自己的，用得最多也是最简单的同步锁。 jdk同步锁是使用关键词synchronized, 这个关键词怎么使用这里就不介绍了，我只讲它会引起什么样的。">
+<meta name="keywords" content="lock,synchronized">
+<meta property="og:type" content="article">
+<meta property="og:title" content="java开发中的锁（一）">
+<meta property="og:url" content="http://liuguobing634.github.io/lgb-blog/2017/11/14/java-lock-1/index.html">
+<meta property="og:site_name" content="刘国兵的博客">
+<meta property="og:description" content="在开发中难免会出现需要多线程多并发的情况，而这种情况下，数据的操作就会需要锁机制了，java开发中有各种各样的锁，本系列文章将会一一将到，既包含jdk本身的单机锁，也有分布式相关的锁。 首先我们来看jdk自己的，用得最多也是最简单的同步锁。 jdk同步锁是使用关键词synchronized, 这个关键词怎么使用这里就不介绍了，我只讲它会引起什么样的。">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2017-11-14T15:44:38.742Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="java开发中的锁（一）">
+<meta name="twitter:description" content="在开发中难免会出现需要多线程多并发的情况，而这种情况下，数据的操作就会需要锁机制了，java开发中有各种各样的锁，本系列文章将会一一将到，既包含jdk本身的单机锁，也有分布式相关的锁。 首先我们来看jdk自己的，用得最多也是最简单的同步锁。 jdk同步锁是使用关键词synchronized, 这个关键词怎么使用这里就不介绍了，我只讲它会引起什么样的。">
+  
+    <link rel="alternate" href="/atom.xml" title="刘国兵的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/lgb-blog/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/lgb-blog/" id="logo">刘国兵的博客</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/lgb-blog/" id="subtitle">技术无止境</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/lgb-blog/">Home</a>
+        
+          <a class="main-nav-link" href="/lgb-blog/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liuguobing634.github.io/lgb-blog"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-java-lock-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lgb-blog/2017/11/14/java-lock-1/" class="article-date">
+  <time datetime="2017-11-14T15:30:14.000Z" itemprop="datePublished">2017-11-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      java开发中的锁（一）
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在开发中难免会出现需要多线程多并发的情况，而这种情况下，数据的操作就会需要锁机制了，java开发中有各种各样的锁，本系列文章将会一一将到，既包含jdk本身的单机锁，也有分布式相关的锁。</p>
+<p>首先我们来看jdk自己的，用得最多也是最简单的同步锁。</p>
+<p>jdk同步锁是使用关键词synchronized, 这个关键词怎么使用这里就不介绍了，我只讲它会引起什么样的。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/11/14/java-lock-1/" data-id="cjarovyc5000q859em0u6zkfw" class="article-share-link">Partager</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/lock/">lock</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/synchronized/">synchronized</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+    <a href="/lgb-blog/2017/12/04/lerning-hbase-1/" id="article-nav-newer" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Récent</strong>
+      <div class="article-nav-title">
+        
+          学习-hbase-1(安装与启动)
+        
+      </div>
+    </a>
+  
+  
+    <a href="/lgb-blog/2017/10/27/lerning-netty-1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ancien</strong>
+      <div class="article-nav-title">netty学习之JBOSS Marshalling</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Catégories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/activeMq/">activeMq</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/dubbo/">dubbo</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/java/">java</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/netty/">netty</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/spring/">spring</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/zookeeper/">zookeeper</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Mot-clés</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/ForkJoin/">ForkJoin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/Nio/">Nio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hadoop/">hadoop</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hbase/">hbase</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jboss-marshalling/">jboss marshalling</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jvm/">jvm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/lock/">lock</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/netty/">netty</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-cloud/">spring cloud</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/synchronized/">synchronized</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/并发/">并发</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/设计模式/">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Nuage de mot-clés</h3>
+    <div class="widget tagcloud">
+      <a href="/lgb-blog/tags/ForkJoin/" style="font-size: 10px;">ForkJoin</a> <a href="/lgb-blog/tags/Nio/" style="font-size: 10px;">Nio</a> <a href="/lgb-blog/tags/activeMq/" style="font-size: 13.33px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 16.67px;">dubbo</a> <a href="/lgb-blog/tags/hadoop/" style="font-size: 10px;">hadoop</a> <a href="/lgb-blog/tags/hbase/" style="font-size: 10px;">hbase</a> <a href="/lgb-blog/tags/hessian/" style="font-size: 13.33px;">hessian</a> <a href="/lgb-blog/tags/java/" style="font-size: 10px;">java</a> <a href="/lgb-blog/tags/jboss-marshalling/" style="font-size: 10px;">jboss marshalling</a> <a href="/lgb-blog/tags/jms/" style="font-size: 13.33px;">jms</a> <a href="/lgb-blog/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/lgb-blog/tags/lock/" style="font-size: 10px;">lock</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/netty/" style="font-size: 10px;">netty</a> <a href="/lgb-blog/tags/rpc/" style="font-size: 10px;">rpc</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-cloud/" style="font-size: 10px;">spring cloud</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/synchronized/" style="font-size: 10px;">synchronized</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a> <a href="/lgb-blog/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/lgb-blog/tags/并发/" style="font-size: 10px;">并发</a> <a href="/lgb-blog/tags/设计模式/" style="font-size: 10px;">设计模式</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/11/">November 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Articles récents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/lgb-blog/2017/12/04/lerning-hbase-1/">学习-hbase-1(安装与启动)</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/11/14/java-lock-1/">java开发中的锁（一）</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/27/lerning-netty-1/">netty学习之JBOSS Marshalling</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/22/design-pattern/">聊聊设计模式</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/17/merge-sort-by-fork-join/">fork-join来实现排序算法</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 刘国兵<br>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/lgb-blog/" class="mobile-nav-link">Home</a>
+  
+    <a href="/lgb-blog/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/lgb-blog/fancybox/jquery.fancybox.css">
+  <script src="/lgb-blog/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/lgb-blog/js/script.js"></script>
+
+  </div>
+</body>
+</html>

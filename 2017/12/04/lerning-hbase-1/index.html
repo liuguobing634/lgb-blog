@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  
+  <title>学习-hbase-1(安装与启动) | 刘国兵的博客</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="description" content="hbase的安装（单机、伪分布式与分布式)单机安装把hbase包下载后，解压，然后进入bin目录，执行start-hbase.sh就能启动hbase了（注意系统要配置jdk，并且把正确的在系统变量中添加了JAVA_HOME，如果系统无法添加JAVA_HOME，或者你想配置独立的，也可以在conf/hbase-env.sh下配置)。 hbase启动默认会伴随着启动zookeeper，这两个服务共用一">
+<meta name="keywords" content="hbase,hadoop">
+<meta property="og:type" content="article">
+<meta property="og:title" content="学习-hbase-1(安装与启动)">
+<meta property="og:url" content="http://liuguobing634.github.io/lgb-blog/2017/12/04/lerning-hbase-1/index.html">
+<meta property="og:site_name" content="刘国兵的博客">
+<meta property="og:description" content="hbase的安装（单机、伪分布式与分布式)单机安装把hbase包下载后，解压，然后进入bin目录，执行start-hbase.sh就能启动hbase了（注意系统要配置jdk，并且把正确的在系统变量中添加了JAVA_HOME，如果系统无法添加JAVA_HOME，或者你想配置独立的，也可以在conf/hbase-env.sh下配置)。 hbase启动默认会伴随着启动zookeeper，这两个服务共用一">
+<meta property="og:locale" content="zh">
+<meta property="og:updated_time" content="2017-12-04T04:21:54.257Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="学习-hbase-1(安装与启动)">
+<meta name="twitter:description" content="hbase的安装（单机、伪分布式与分布式)单机安装把hbase包下载后，解压，然后进入bin目录，执行start-hbase.sh就能启动hbase了（注意系统要配置jdk，并且把正确的在系统变量中添加了JAVA_HOME，如果系统无法添加JAVA_HOME，或者你想配置独立的，也可以在conf/hbase-env.sh下配置)。 hbase启动默认会伴随着启动zookeeper，这两个服务共用一">
+  
+    <link rel="alternate" href="/atom.xml" title="刘国兵的博客" type="application/atom+xml">
+  
+  
+    <link rel="icon" href="/favicon.png">
+  
+  
+    <link href="//fonts.googleapis.com/css?family=Source+Code+Pro" rel="stylesheet" type="text/css">
+  
+  <link rel="stylesheet" href="/lgb-blog/css/style.css">
+  
+
+</head>
+
+<body>
+  <div id="container">
+    <div id="wrap">
+      <header id="header">
+  <div id="banner"></div>
+  <div id="header-outer" class="outer">
+    <div id="header-title" class="inner">
+      <h1 id="logo-wrap">
+        <a href="/lgb-blog/" id="logo">刘国兵的博客</a>
+      </h1>
+      
+        <h2 id="subtitle-wrap">
+          <a href="/lgb-blog/" id="subtitle">技术无止境</a>
+        </h2>
+      
+    </div>
+    <div id="header-inner" class="inner">
+      <nav id="main-nav">
+        <a id="main-nav-toggle" class="nav-icon"></a>
+        
+          <a class="main-nav-link" href="/lgb-blog/">Home</a>
+        
+          <a class="main-nav-link" href="/lgb-blog/archives">Archives</a>
+        
+      </nav>
+      <nav id="sub-nav">
+        
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
+        
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
+      </nav>
+      <div id="search-form-wrap">
+        <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liuguobing634.github.io/lgb-blog"></form>
+      </div>
+    </div>
+  </div>
+</header>
+      <div class="outer">
+        <section id="main"><article id="post-lerning-hbase-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lgb-blog/2017/12/04/lerning-hbase-1/" class="article-date">
+  <time datetime="2017-12-04T02:15:54.000Z" itemprop="datePublished">2017-12-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 class="article-title" itemprop="name">
+      学习-hbase-1(安装与启动)
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="hbase的安装（单机、伪分布式与分布式"><a href="#hbase的安装（单机、伪分布式与分布式" class="headerlink" title="hbase的安装（单机、伪分布式与分布式)"></a>hbase的安装（单机、伪分布式与分布式)</h2><h3 id="单机安装"><a href="#单机安装" class="headerlink" title="单机安装"></a>单机安装</h3><p>把hbase包下载后，解压，然后进入bin目录，执行start-hbase.sh就能启动hbase了（注意系统要配置jdk，并且把正确的在系统变量中添加了JAVA_HOME，如果系统无法添加JAVA_HOME，或者你想配置独立的，也可以在conf/hbase-env.sh下配置)。</p>
+<p>hbase启动默认会伴随着启动zookeeper，这两个服务共用一个javaVM。这里讲一下zookeeper在hbase中的作用主要是一个hmaster选举，以及hmaster对regionserver的管理，所以之后客户端连接只需要知道zookeeper的集群地址就行（而zookeeper会给客户端返回一个主机名，客户端根据主机名来连接，所以客户端应该能够知道服务器主机名才对，后面也会谈到）。</p>
+<p>测试下是否启动成功，可以敲击jps(查看所有java的pid)命令。如果有HMaster，那么就启动成功了。</p>
+<p>单机安装也有几个可配置项，改变conf/hbase-site.xml文件,在cnfiguration中添加<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.rootdir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:///Users/liuguobing/hbase<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span>       </div><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.zookeeper.property.datadir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:///Users/liuguobing/zookeeper<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>hbase.rootdir是用来存储hbase的数据文件的，而hbase.zookeeper.property.datadir是zookeeper管理的zookeeper的数据。        </p>
+<h3 id="伪分布式与分布式安装"><a href="#伪分布式与分布式安装" class="headerlink" title="伪分布式与分布式安装"></a>伪分布式与分布式安装</h3><p>无论是分布式安装还是伪分布式安装，都需要HDFS作为底层文件存，HDFS类似于谷歌的GFS（实际上hbase就是根据谷歌的BigTable而来的）。所以在进行这一节与下一节之前，我们先来启动一个HDFS。</p>
+<h4 id="HDFS的安装启动"><a href="#HDFS的安装启动" class="headerlink" title="HDFS的安装启动"></a>HDFS的安装启动</h4><p>HDFS是hadoop的子组件，所以这里需要hadoop的，由于目前项目组也没有使用到hadoop，所以这里需要讲解下。</p>
+<p>hdfs的配置项需要修改的地方有两个文件，在hadoop目录下的etc/hadoop/core-site.xml与etc/hadoop/hdfs-site.xml。core-site.xml配置如下:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</div><div class="line">   &lt;?xml-stylesheet type="text/xsl" href="configuration.xsl"?&gt;</div><div class="line">   <span class="comment">&lt;!--</span></div><div class="line"><span class="comment">     Licensed ...</span></div><div class="line"><span class="comment">    --&gt;</span></div><div class="line">   </div><div class="line">  <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>hadoop.tmp.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/home/hadoop/tmp<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">description</span>&gt;</span>Abase for other temporary directories.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>fs.default.name<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>hdfs://localhost:9000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>其中localhost可以改成主机名，以便其他主机能够访问到。</p>
+<p>hdfs-site.xml的配置:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</div><div class="line">   &lt;?xml-stylesheet type="text/xsl" href="configuration.xsl"?&gt;</div><div class="line">   <span class="comment">&lt;!--</span></div><div class="line"><span class="comment">     Licensed ...</span></div><div class="line"><span class="comment">    --&gt;</span></div><div class="line">    </div><div class="line">  <span class="tag">&lt;<span class="name">configuration</span>&gt;</span> </div><div class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.replication<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>1<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.name.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/home/hadoop/tmp/dfs/name<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.datanode.data.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/home/hadoop/tmp/dfs/data<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span>                                                                          </div><div class="line">  <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>配置好这两个之后，hadoop下运行bin/hdfs namenode -format格式化hdfs文件系统，然后执行sbin/start-hdfs.sh就可以了，执行完后执行jps命令，应该会有NameNode、DataNode等几个进程，如果有则启动成功，浏览器打开<a href="http://localhost:50070/会出现以下hdfs的管理界面。" target="_blank" rel="external">http://localhost:50070/会出现以下hdfs的管理界面。</a></p>
+<h4 id="伪分布式安装"><a href="#伪分布式安装" class="headerlink" title="伪分布式安装"></a>伪分布式安装</h4><p>伪分布式就是在一台机器运行多个同样的服务，主要用于测试，在生产环境不建议使用，性能的测试也不建议。</p>
+<p>配置与单机类似，就是需要修改下hbase.rootdir，将这个换成hdfs的文件url，也可以配置一个hdfs的副本数，配置名是dfs.replication，默认是3（其实够用）。</p>
+<p>然后像单机那样启动start-hbase.sh，就启动一次就好，不像别的程序如zookeeper那样伪分布式改变配置多次启动来伪装成分布式。hbase实际上就只有两个服务，一个是hMaster，一个是regionserver,前者是管理后者，后者管理region，都是需要配合zk使用。所以伪分布式只需要启动多个hMaster和多个regionserver即可。hbase包下有启动备份hMaster与regionServer的执行文件，分别是bin/local-master-backup.sh和bin/local-regionserver.sh，两者后面都是接着<code>start 数字</code> 这样使用。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/12/04/lerning-hbase-1/" data-id="cjarovybu000p859efpiyrihi" class="article-share-link">Partager</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/hadoop/">hadoop</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/hbase/">hbase</a></li></ul>
+
+    </footer>
+  </div>
+  
+    
+<nav id="article-nav">
+  
+  
+    <a href="/lgb-blog/2017/11/14/java-lock-1/" id="article-nav-older" class="article-nav-link-wrap">
+      <strong class="article-nav-caption">Ancien</strong>
+      <div class="article-nav-title">java开发中的锁（一）</div>
+    </a>
+  
+</nav>
+
+  
+</article>
+
+</section>
+        
+          <aside id="sidebar">
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Catégories</h3>
+    <div class="widget">
+      <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/activeMq/">activeMq</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/dubbo/">dubbo</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/java/">java</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/netty/">netty</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/spring/">spring</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/zookeeper/">zookeeper</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Mot-clés</h3>
+    <div class="widget">
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/ForkJoin/">ForkJoin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/Nio/">Nio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hadoop/">hadoop</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hbase/">hbase</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jboss-marshalling/">jboss marshalling</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jvm/">jvm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/lock/">lock</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/netty/">netty</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-cloud/">spring cloud</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/synchronized/">synchronized</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/并发/">并发</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/设计模式/">设计模式</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Nuage de mot-clés</h3>
+    <div class="widget tagcloud">
+      <a href="/lgb-blog/tags/ForkJoin/" style="font-size: 10px;">ForkJoin</a> <a href="/lgb-blog/tags/Nio/" style="font-size: 10px;">Nio</a> <a href="/lgb-blog/tags/activeMq/" style="font-size: 13.33px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 16.67px;">dubbo</a> <a href="/lgb-blog/tags/hadoop/" style="font-size: 10px;">hadoop</a> <a href="/lgb-blog/tags/hbase/" style="font-size: 10px;">hbase</a> <a href="/lgb-blog/tags/hessian/" style="font-size: 13.33px;">hessian</a> <a href="/lgb-blog/tags/java/" style="font-size: 10px;">java</a> <a href="/lgb-blog/tags/jboss-marshalling/" style="font-size: 10px;">jboss marshalling</a> <a href="/lgb-blog/tags/jms/" style="font-size: 13.33px;">jms</a> <a href="/lgb-blog/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/lgb-blog/tags/lock/" style="font-size: 10px;">lock</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/netty/" style="font-size: 10px;">netty</a> <a href="/lgb-blog/tags/rpc/" style="font-size: 10px;">rpc</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-cloud/" style="font-size: 10px;">spring cloud</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/synchronized/" style="font-size: 10px;">synchronized</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a> <a href="/lgb-blog/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/lgb-blog/tags/并发/" style="font-size: 10px;">并发</a> <a href="/lgb-blog/tags/设计模式/" style="font-size: 10px;">设计模式</a>
+    </div>
+  </div>
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Archives</h3>
+    <div class="widget">
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/11/">November 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/09/">September 2017</a></li></ul>
+    </div>
+  </div>
+
+
+  
+    
+  <div class="widget-wrap">
+    <h3 class="widget-title">Articles récents</h3>
+    <div class="widget">
+      <ul>
+        
+          <li>
+            <a href="/lgb-blog/2017/12/04/lerning-hbase-1/">学习-hbase-1(安装与启动)</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/11/14/java-lock-1/">java开发中的锁（一）</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/27/lerning-netty-1/">netty学习之JBOSS Marshalling</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/22/design-pattern/">聊聊设计模式</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/10/17/merge-sort-by-fork-join/">fork-join来实现排序算法</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+
+  
+</aside>
+        
+      </div>
+      <footer id="footer">
+  
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2017 刘国兵<br>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
+    </div>
+  </div>
+</footer>
+    </div>
+    <nav id="mobile-nav">
+  
+    <a href="/lgb-blog/" class="mobile-nav-link">Home</a>
+  
+    <a href="/lgb-blog/archives" class="mobile-nav-link">Archives</a>
+  
+</nav>
+    
+
+<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+
+
+  <link rel="stylesheet" href="/lgb-blog/fancybox/jquery.fancybox.css">
+  <script src="/lgb-blog/fancybox/jquery.fancybox.pack.js"></script>
+
+
+<script src="/lgb-blog/js/script.js"></script>
+
+  </div>
+</body>
+</html>

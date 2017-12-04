@@ -56,9 +56,9 @@
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liuguobing634.github.io/lgb-blog"></form>
@@ -68,6 +68,101 @@
 </header>
       <div class="outer">
         <section id="main">
+  
+    <article id="post-lerning-hbase-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lgb-blog/2017/12/04/lerning-hbase-1/" class="article-date">
+  <time datetime="2017-12-04T02:15:54.000Z" itemprop="datePublished">2017-12-04</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/lgb-blog/2017/12/04/lerning-hbase-1/">学习-hbase-1(安装与启动)</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="hbase的安装（单机、伪分布式与分布式"><a href="#hbase的安装（单机、伪分布式与分布式" class="headerlink" title="hbase的安装（单机、伪分布式与分布式)"></a>hbase的安装（单机、伪分布式与分布式)</h2><h3 id="单机安装"><a href="#单机安装" class="headerlink" title="单机安装"></a>单机安装</h3><p>把hbase包下载后，解压，然后进入bin目录，执行start-hbase.sh就能启动hbase了（注意系统要配置jdk，并且把正确的在系统变量中添加了JAVA_HOME，如果系统无法添加JAVA_HOME，或者你想配置独立的，也可以在conf/hbase-env.sh下配置)。</p>
+<p>hbase启动默认会伴随着启动zookeeper，这两个服务共用一个javaVM。这里讲一下zookeeper在hbase中的作用主要是一个hmaster选举，以及hmaster对regionserver的管理，所以之后客户端连接只需要知道zookeeper的集群地址就行（而zookeeper会给客户端返回一个主机名，客户端根据主机名来连接，所以客户端应该能够知道服务器主机名才对，后面也会谈到）。</p>
+<p>测试下是否启动成功，可以敲击jps(查看所有java的pid)命令。如果有HMaster，那么就启动成功了。</p>
+<p>单机安装也有几个可配置项，改变conf/hbase-site.xml文件,在cnfiguration中添加<br><figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.rootdir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:///Users/liuguobing/hbase<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span>       </div><div class="line"><span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">          <span class="tag">&lt;<span class="name">name</span>&gt;</span>hbase.zookeeper.property.datadir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">          <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:///Users/liuguobing/zookeeper<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">property</span>&gt;</span></div></pre></td></tr></table></figure></p>
+<p>hbase.rootdir是用来存储hbase的数据文件的，而hbase.zookeeper.property.datadir是zookeeper管理的zookeeper的数据。        </p>
+<h3 id="伪分布式与分布式安装"><a href="#伪分布式与分布式安装" class="headerlink" title="伪分布式与分布式安装"></a>伪分布式与分布式安装</h3><p>无论是分布式安装还是伪分布式安装，都需要HDFS作为底层文件存，HDFS类似于谷歌的GFS（实际上hbase就是根据谷歌的BigTable而来的）。所以在进行这一节与下一节之前，我们先来启动一个HDFS。</p>
+<h4 id="HDFS的安装启动"><a href="#HDFS的安装启动" class="headerlink" title="HDFS的安装启动"></a>HDFS的安装启动</h4><p>HDFS是hadoop的子组件，所以这里需要hadoop的，由于目前项目组也没有使用到hadoop，所以这里需要讲解下。</p>
+<p>hdfs的配置项需要修改的地方有两个文件，在hadoop目录下的etc/hadoop/core-site.xml与etc/hadoop/hdfs-site.xml。core-site.xml配置如下:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</div><div class="line">   &lt;?xml-stylesheet type="text/xsl" href="configuration.xsl"?&gt;</div><div class="line">   <span class="comment">&lt;!--</span></div><div class="line"><span class="comment">     Licensed ...</span></div><div class="line"><span class="comment">    --&gt;</span></div><div class="line">   </div><div class="line">  <span class="tag">&lt;<span class="name">configuration</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>hadoop.tmp.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/home/hadoop/tmp<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">description</span>&gt;</span>Abase for other temporary directories.<span class="tag">&lt;/<span class="name">description</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>fs.default.name<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>hdfs://localhost:9000<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">  <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>其中localhost可以改成主机名，以便其他主机能够访问到。</p>
+<p>hdfs-site.xml的配置:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="UTF-8"?&gt;</div><div class="line">   &lt;?xml-stylesheet type="text/xsl" href="configuration.xsl"?&gt;</div><div class="line">   <span class="comment">&lt;!--</span></div><div class="line"><span class="comment">     Licensed ...</span></div><div class="line"><span class="comment">    --&gt;</span></div><div class="line">    </div><div class="line">  <span class="tag">&lt;<span class="name">configuration</span>&gt;</span> </div><div class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.replication<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>1<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.namenode.name.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/home/hadoop/tmp/dfs/name<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">name</span>&gt;</span>dfs.datanode.data.dir<span class="tag">&lt;/<span class="name">name</span>&gt;</span></div><div class="line">      <span class="tag">&lt;<span class="name">value</span>&gt;</span>file:/home/hadoop/tmp/dfs/data<span class="tag">&lt;/<span class="name">value</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">property</span>&gt;</span>                                                                          </div><div class="line">  <span class="tag">&lt;/<span class="name">configuration</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>配置好这两个之后，hadoop下运行bin/hdfs namenode -format格式化hdfs文件系统，然后执行sbin/start-hdfs.sh就可以了，执行完后执行jps命令，应该会有NameNode、DataNode等几个进程，如果有则启动成功，浏览器打开<a href="http://localhost:50070/会出现以下hdfs的管理界面。" target="_blank" rel="external">http://localhost:50070/会出现以下hdfs的管理界面。</a></p>
+<h4 id="伪分布式安装"><a href="#伪分布式安装" class="headerlink" title="伪分布式安装"></a>伪分布式安装</h4><p>伪分布式就是在一台机器运行多个同样的服务，主要用于测试，在生产环境不建议使用，性能的测试也不建议。</p>
+<p>配置与单机类似，就是需要修改下hbase.rootdir，将这个换成hdfs的文件url，也可以配置一个hdfs的副本数，配置名是dfs.replication，默认是3（其实够用）。</p>
+<p>然后像单机那样启动start-hbase.sh，就启动一次就好，不像别的程序如zookeeper那样伪分布式改变配置多次启动来伪装成分布式。hbase实际上就只有两个服务，一个是hMaster，一个是regionserver,前者是管理后者，后者管理region，都是需要配合zk使用。所以伪分布式只需要启动多个hMaster和多个regionserver即可。hbase包下有启动备份hMaster与regionServer的执行文件，分别是bin/local-master-backup.sh和bin/local-regionserver.sh，两者后面都是接着<code>start 数字</code> 这样使用。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/12/04/lerning-hbase-1/" data-id="cjarovybu000p859efpiyrihi" class="article-share-link">Partager</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/hadoop/">hadoop</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/hbase/">hbase</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-java-lock-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lgb-blog/2017/11/14/java-lock-1/" class="article-date">
+  <time datetime="2017-11-14T15:30:14.000Z" itemprop="datePublished">2017-11-14</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/lgb-blog/2017/11/14/java-lock-1/">java开发中的锁（一）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <p>在开发中难免会出现需要多线程多并发的情况，而这种情况下，数据的操作就会需要锁机制了，java开发中有各种各样的锁，本系列文章将会一一将到，既包含jdk本身的单机锁，也有分布式相关的锁。</p>
+<p>首先我们来看jdk自己的，用得最多也是最简单的同步锁。</p>
+<p>jdk同步锁是使用关键词synchronized, 这个关键词怎么使用这里就不介绍了，我只讲它会引起什么样的。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/11/14/java-lock-1/" data-id="cjarovyc5000q859em0u6zkfw" class="article-share-link">Partager</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/lock/">lock</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/synchronized/">synchronized</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
   
     <article id="post-lerning-netty-1" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
@@ -109,7 +204,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/27/lerning-netty-1/" data-id="cj9a16t07000moa9elh8jtdhj" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/27/lerning-netty-1/" data-id="cjarovycd000t859ei12pt8lv" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/jboss-marshalling/">jboss marshalling</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/netty/">netty</a></li></ul>
@@ -209,7 +304,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/22/design-pattern/" data-id="cj9a16syo0000oa9eusustuxq" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/22/design-pattern/" data-id="cjarovyam0000859eekfvp3u6" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/设计模式/">设计模式</a></li></ul>
@@ -251,7 +346,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/17/merge-sort-by-fork-join/" data-id="cj9a16t0m0011oa9ecdrhig6j" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/17/merge-sort-by-fork-join/" data-id="cjarovydj001d859e03ur60vr" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/ForkJoin/">ForkJoin</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/多线程/">多线程</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/并发/">并发</a></li></ul>
@@ -341,7 +436,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/14/java-base-1/" data-id="cj9a16szx000hoa9eure65c18" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/14/java-base-1/" data-id="cjarovyci000v859epwgzd72a" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/java/">java</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/jvm/">jvm</a></li></ul>
@@ -401,7 +496,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/14/dubbo-testing-3/" data-id="cj9a16szp0008oa9e46b6suwo" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/14/dubbo-testing-3/" data-id="cjarovyc8000s859e2ljltsi3" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li></ul>
@@ -490,7 +585,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/13/dubbo-testing-2/" data-id="cj9a16szs0009oa9epd4gk6ye" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/13/dubbo-testing-2/" data-id="cjarovyay0005859eumh6qyoa" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li></ul>
@@ -552,7 +647,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/10/nio-1/" data-id="cj9a16t0w0017oa9elpp2qnhe" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/10/nio-1/" data-id="cjarovydo001j859evuug1nw6" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/Nio/">Nio</a></li></ul>
@@ -638,7 +733,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/03/lerning-spring-5/" data-id="cj9a16t0h000zoa9e55llw68y" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/03/lerning-spring-5/" data-id="cjarovydg001b859emed0i7dp" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring-cloud/">spring cloud</a></li></ul>
@@ -650,118 +745,10 @@
 
 
   
-    <article id="post-lerning-hessian-2" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/lgb-blog/2017/10/02/lerning-hessian-2/" class="article-date">
-  <time datetime="2017-10-02T10:11:58.000Z" itemprop="datePublished">2017-10-02</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/lgb-blog/categories/spring/">spring</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/lgb-blog/2017/10/02/lerning-hessian-2/">Hessian学习（二）</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="Hessian与spring的结合"><a href="#Hessian与spring的结合" class="headerlink" title="Hessian与spring的结合"></a>Hessian与spring的结合</h2><p>其实这篇文章主要讲spring的remoting，顺便使用了hessian而已。</p>
-<p>spring在很早的时候就提供了remoting功能，它在包spring-web下，它提供了五种实现，第一是Hessian，第二是Burlap，第三是http-invoke,第四是jax-ws，第五种是rmi，hessian现在不多说，burlap跟hessian是同一家公司的，现在spring将之注解为过时，http-invoke是spring自己提供的rpc，jax-ws是j2ee关于webservice的规范。</p>
-<p>这些remoting在spring中用起来大同小异，这里就医Hessian为例。</p>
-<p>先看服务端配置，spring-servlet.xml</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">name</span>=<span class="string">"/remoting/hessian"</span> <span class="attr">class</span>=<span class="string">"org.springframework.remoting.caucho.HessianServiceExporter"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"serviceInterface"</span> <span class="attr">value</span>=<span class="string">"lew.bing.spring.service.UserService"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"service"</span> <span class="attr">ref</span>=<span class="string">"userServiceImpl"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div></pre></td></tr></table></figure>
-<p>服务端就这么简单，通过写这个bean就能把接口暴露出去，这里的name在前面加上spring mvc的dispatch配的url就是hessian的url。如果对于不是以spring mvc作为控制层的项目来说，也可以在根配置中配（如果使用annotation以及类配置的话，大家可以自行的去转换）。然后需要在web.xml中写上servlet及其mapping，其中servlet部分的类是org.springframework.web.context.support.HttpRequestHandlerServlet，名字是bean的名字，映射的url则是remoting的url。</p>
-<p>对于hessian，spring也提供可客户端方的使用，给个例子吧（spring文档中的例子，我本人并没有写相关的案例）</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">class</span>=<span class="string">"example.SimpleObject"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"accountService"</span> <span class="attr">ref</span>=<span class="string">"accountService"</span>/&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"accountService"</span> <span class="attr">class</span>=<span class="string">"org.springframework.remoting.caucho.HessianProxyFactoryBean"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"serviceUrl"</span> <span class="attr">value</span>=<span class="string">"http://remotehost:8080/remoting/AccountService"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"serviceInterface"</span> <span class="attr">value</span>=<span class="string">"example.AccountService"</span>/&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div></pre></td></tr></table></figure>
-<p>用起来还是很简单的，换做其他的rpc，大致也是如此使用，当然因为其他的rpc不一定是基于http协议，有些配置还是需要改变的，不去细讲。</p>
-<p>我个人总结认为，hessian对比dubbo，还是太低级了，它仅仅提供rpc的功能，但是像服务注册与发现、集群与负载均衡等都没有，要自己手动去完成，dubbo也提供了hessian的协议，hessian的优势在于是跨语言的。接下来我将去学习spring cloud这一个比dubbo更完善的rpc框架。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/02/lerning-hessian-2/" data-id="cj9a16szu000doa9enj4nphex" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-lerning-hessian-1" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/lgb-blog/2017/10/02/lerning-hessian-1/" class="article-date">
-  <time datetime="2017-10-02T04:14:47.000Z" itemprop="datePublished">2017-10-02</time>
-</a>
-    
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/lgb-blog/2017/10/02/lerning-hessian-1/">Hessian学习（一）</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="hessian的简单实用"><a href="#hessian的简单实用" class="headerlink" title="hessian的简单实用"></a>hessian的简单实用</h2><p>hessian是常用的rpc手段之一，它是基于Binary-RPC传输的一种webservice。</p>
-<p>hessian底层是以http传送，在java上就是通过一个Servlet了，就是HessianServlet。我们先来看源码，只看init部分：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">HessianServlet</span> </span>&#123;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ServletConfig config)</span></span></div><div class="line"><span class="function">        <span class="keyword">throws</span> ServletException</span></div><div class="line"><span class="function">      </span>&#123;</div><div class="line">        <span class="keyword">super</span>.init(config);</div><div class="line">        </div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">          <span class="keyword">if</span> (_homeImpl != <span class="keyword">null</span>) &#123;</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"home-class"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"home-class"</span>);</div><div class="line">    </div><div class="line">            Class&lt;?&gt; homeClass = loadClass(className);</div><div class="line">    </div><div class="line">            _homeImpl = homeClass.newInstance();</div><div class="line">    </div><div class="line">            init(_homeImpl);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"service-class"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"service-class"</span>);</div><div class="line">    </div><div class="line">            Class&lt;?&gt; homeClass = loadClass(className);</div><div class="line">    </div><div class="line">            _homeImpl = homeClass.newInstance();</div><div class="line">    </div><div class="line">            init(_homeImpl);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> &#123;</div><div class="line">            <span class="keyword">if</span> (getClass().equals(HessianServlet.class))</div><div class="line">              <span class="keyword">throw</span> <span class="keyword">new</span> ServletException(<span class="string">"server must extend HessianServlet"</span>);</div><div class="line">    </div><div class="line">            _homeImpl = <span class="keyword">this</span>;</div><div class="line">          &#125;</div><div class="line">    </div><div class="line">          <span class="keyword">if</span> (_homeAPI != <span class="keyword">null</span>) &#123;</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"home-api"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"home-api"</span>);</div><div class="line">    </div><div class="line">            _homeAPI = loadClass(className);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"api-class"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"api-class"</span>);</div><div class="line">    </div><div class="line">            _homeAPI = loadClass(className);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (_homeImpl != <span class="keyword">null</span>) &#123;</div><div class="line">            _homeAPI = findRemoteAPI(_homeImpl.getClass());</div><div class="line">    </div><div class="line">            <span class="keyword">if</span> (_homeAPI == <span class="keyword">null</span>)</div><div class="line">              _homeAPI = _homeImpl.getClass();</div><div class="line">            </div><div class="line">            _homeAPI = _homeImpl.getClass();</div><div class="line">          &#125;</div><div class="line">          </div><div class="line">          <span class="keyword">if</span> (_objectImpl != <span class="keyword">null</span>) &#123;</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"object-class"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"object-class"</span>);</div><div class="line">    </div><div class="line">            Class&lt;?&gt; objectClass = loadClass(className);</div><div class="line">    </div><div class="line">            _objectImpl = objectClass.newInstance();</div><div class="line">    </div><div class="line">            init(_objectImpl);</div><div class="line">          &#125;</div><div class="line">    </div><div class="line">          <span class="keyword">if</span> (_objectAPI != <span class="keyword">null</span>) &#123;</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"object-api"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"object-api"</span>);</div><div class="line">    </div><div class="line">            _objectAPI = loadClass(className);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (_objectImpl != <span class="keyword">null</span>)</div><div class="line">            _objectAPI = _objectImpl.getClass();</div><div class="line">    </div><div class="line">          _homeSkeleton = <span class="keyword">new</span> HessianSkeleton(_homeImpl, _homeAPI);</div><div class="line">          </div><div class="line">          <span class="keyword">if</span> (_objectAPI != <span class="keyword">null</span>)</div><div class="line">            _homeSkeleton.setObjectClass(_objectAPI);</div><div class="line">    </div><div class="line">          <span class="keyword">if</span> (_objectImpl != <span class="keyword">null</span>) &#123;</div><div class="line">            _objectSkeleton = <span class="keyword">new</span> HessianSkeleton(_objectImpl, _objectAPI);</div><div class="line">            _objectSkeleton.setHomeClass(_homeAPI);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span></div><div class="line">            _objectSkeleton = _homeSkeleton;</div><div class="line">    </div><div class="line">          <span class="keyword">if</span> (<span class="string">"true"</span>.equals(getInitParameter(<span class="string">"debug"</span>))) &#123;</div><div class="line">          &#125;</div><div class="line">    </div><div class="line">          <span class="keyword">if</span> (<span class="string">"false"</span>.equals(getInitParameter(<span class="string">"send-collection-type"</span>)))</div><div class="line">            setSendCollectionType(<span class="keyword">false</span>);</div><div class="line">        &#125; <span class="keyword">catch</span> (ServletException e) &#123;</div><div class="line">          <span class="keyword">throw</span> e;</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> ServletException(e);</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    </div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>首先是判断home-class参数是否存在，存在的话就加载这个类并实例化，否则就判断service-class是否存在，逻辑跟前面一样，然后假如都不存在，那么就判断当前进入的servlet是不是此类本身，是的话就报错（因为必要的参数没有），否则就将本类当做接口的实现。</p>
-<p>这个信息告诉我们，使用hessian有两种方式，第一种是直接继承hessian，并实现rpc调用的接口，第二种就是直接使用hessian，但需要在参数中设置接口类和实现类（分别对应着home-class与home-api或者server-class与api-class）。</p>
-<p>我就根据这个信息写了两个server实现同样的功能。</p>
-<p>不过在写server之前，先看接口类，BasicService.class:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">BasicService</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function">String <span class="title">sayHello</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>然后两个server，第一个是BasicServiceImpl.class，普通的pojo</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BasicServiceImpl</span> <span class="keyword">implements</span> <span class="title">BasicService</span></span>&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">sayHello</span><span class="params">()</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"hello"</span>);</div><div class="line">        <span class="keyword">return</span> <span class="string">"hello"</span>;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>另一个是AnotherBasicServiceImpl.class,继承自HessianServlet:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@WebServlet</span>(urlPatterns = <span class="string">"/another"</span>)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AnotherBasicServiceImpl</span> <span class="keyword">extends</span> <span class="title">HessianServlet</span> <span class="keyword">implements</span> <span class="title">BasicService</span> </span>&#123;</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">sayHello</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="string">"mmb"</span>;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>看一下我们的web.xml:</p>
-<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8" ?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">web-app</span> <span class="attr">xmlns</span>=<span class="string">"http://xmlns.jcp.org/xml/ns/javaee"</span></span></div><div class="line"><span class="tag">         <span class="attr">xmlns:xsl</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></div><div class="line"><span class="tag">         <span class="attr">xsl:schemaLocation</span>=<span class="string">"http://xmlns.jcp.org/xml/ns/javaee</span></span></div><div class="line"><span class="tag"><span class="string">            http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"</span></span></div><div class="line"><span class="tag">         <span class="attr">version</span>=<span class="string">"3.1"</span></span></div><div class="line"><span class="tag">         <span class="attr">metadata-complete</span>=<span class="string">"false"</span>&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">servlet</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>Hessian<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">servlet-class</span>&gt;</span>com.caucho.hessian.server.HessianServlet<span class="tag">&lt;/<span class="name">servlet-class</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">init-param</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">param-name</span>&gt;</span>home-class<span class="tag">&lt;/<span class="name">param-name</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">param-value</span>&gt;</span>lew.bing.hessian.server.BasicServiceImpl<span class="tag">&lt;/<span class="name">param-value</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">init-param</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">init-param</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">param-name</span>&gt;</span>home-api<span class="tag">&lt;/<span class="name">param-name</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">param-value</span>&gt;</span>lew.bing.hessian.service.BasicService<span class="tag">&lt;/<span class="name">param-value</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">init-param</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">servlet</span>&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">servlet-mapping</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>Hessian<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/hessian<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">servlet-mapping</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;/<span class="name">web-app</span>&gt;</span></div></pre></td></tr></table></figure>
-<p>因为我开启了servlet3.1的注解功能，所以这里只配置一个Servlet，另一个看上面的AnotherBasicServiceImpl的@WebServlet部分。</p>
-<p>我再把client写上，client部分就很简单了：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BasicServiceClient</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> MalformedURLException </span>&#123;</div><div class="line">        HessianProxyFactory factory = <span class="keyword">new</span> HessianProxyFactory();</div><div class="line">        BasicService o = (BasicService)factory.create(BasicService.class, <span class="string">"http://localhost:8484/hessian"</span>);</div><div class="line">        System.out.println(o.sayHello());</div><div class="line">        o = (BasicService) factory.create(BasicService.class,<span class="string">"http://localhost:8484/another"</span>);</div><div class="line">        System.out.println(o.sayHello());</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>测试成功，简单的使用就这样完成了。我个人比较推荐使用第二种继承HessianServlet的方式，因为这样如果是servlet3.0以上的话，就不用一直在xml文件写映射了。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/02/lerning-hessian-1/" data-id="cj9a16t03000joa9eekl6e6am" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
-    <span class="page-number current">1</span><a class="page-number" href="/lgb-blog/page/2/">2</a><a class="extend next" rel="next" href="/lgb-blog/page/2/">__('next') &raquo;</a>
+    <span class="page-number current">1</span><a class="page-number" href="/lgb-blog/page/2/">2</a><a class="page-number" href="/lgb-blog/page/3/">3</a><a class="extend next" rel="next" href="/lgb-blog/page/2/">__('next') &raquo;</a>
   </nav>
 </section>
         
@@ -769,7 +756,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Categories</h3>
+    <h3 class="widget-title">Catégories</h3>
     <div class="widget">
       <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/activeMq/">activeMq</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/dubbo/">dubbo</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/java/">java</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/netty/">netty</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/spring/">spring</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/zookeeper/">zookeeper</a></li></ul>
     </div>
@@ -779,9 +766,9 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
+    <h3 class="widget-title">Mot-clés</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/ForkJoin/">ForkJoin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/Nio/">Nio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jboss-marshalling/">jboss marshalling</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jvm/">jvm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/netty/">netty</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-cloud/">spring cloud</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/并发/">并发</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/设计模式/">设计模式</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/ForkJoin/">ForkJoin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/Nio/">Nio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hadoop/">hadoop</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hbase/">hbase</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jboss-marshalling/">jboss marshalling</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jvm/">jvm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/lock/">lock</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/netty/">netty</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-cloud/">spring cloud</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/synchronized/">synchronized</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/并发/">并发</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/设计模式/">设计模式</a></li></ul>
     </div>
   </div>
 
@@ -789,9 +776,9 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
+    <h3 class="widget-title">Nuage de mot-clés</h3>
     <div class="widget tagcloud">
-      <a href="/lgb-blog/tags/ForkJoin/" style="font-size: 10px;">ForkJoin</a> <a href="/lgb-blog/tags/Nio/" style="font-size: 10px;">Nio</a> <a href="/lgb-blog/tags/activeMq/" style="font-size: 13.33px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 16.67px;">dubbo</a> <a href="/lgb-blog/tags/hessian/" style="font-size: 13.33px;">hessian</a> <a href="/lgb-blog/tags/java/" style="font-size: 10px;">java</a> <a href="/lgb-blog/tags/jboss-marshalling/" style="font-size: 10px;">jboss marshalling</a> <a href="/lgb-blog/tags/jms/" style="font-size: 13.33px;">jms</a> <a href="/lgb-blog/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/netty/" style="font-size: 10px;">netty</a> <a href="/lgb-blog/tags/rpc/" style="font-size: 10px;">rpc</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-cloud/" style="font-size: 10px;">spring cloud</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a> <a href="/lgb-blog/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/lgb-blog/tags/并发/" style="font-size: 10px;">并发</a> <a href="/lgb-blog/tags/设计模式/" style="font-size: 10px;">设计模式</a>
+      <a href="/lgb-blog/tags/ForkJoin/" style="font-size: 10px;">ForkJoin</a> <a href="/lgb-blog/tags/Nio/" style="font-size: 10px;">Nio</a> <a href="/lgb-blog/tags/activeMq/" style="font-size: 13.33px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 16.67px;">dubbo</a> <a href="/lgb-blog/tags/hadoop/" style="font-size: 10px;">hadoop</a> <a href="/lgb-blog/tags/hbase/" style="font-size: 10px;">hbase</a> <a href="/lgb-blog/tags/hessian/" style="font-size: 13.33px;">hessian</a> <a href="/lgb-blog/tags/java/" style="font-size: 10px;">java</a> <a href="/lgb-blog/tags/jboss-marshalling/" style="font-size: 10px;">jboss marshalling</a> <a href="/lgb-blog/tags/jms/" style="font-size: 13.33px;">jms</a> <a href="/lgb-blog/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/lgb-blog/tags/lock/" style="font-size: 10px;">lock</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/netty/" style="font-size: 10px;">netty</a> <a href="/lgb-blog/tags/rpc/" style="font-size: 10px;">rpc</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-cloud/" style="font-size: 10px;">spring cloud</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/synchronized/" style="font-size: 10px;">synchronized</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a> <a href="/lgb-blog/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/lgb-blog/tags/并发/" style="font-size: 10px;">并发</a> <a href="/lgb-blog/tags/设计模式/" style="font-size: 10px;">设计模式</a>
     </div>
   </div>
 
@@ -800,7 +787,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/09/">September 2017</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/11/">November 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/09/">September 2017</a></li></ul>
     </div>
   </div>
 
@@ -808,9 +795,17 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">Articles récents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/lgb-blog/2017/12/04/lerning-hbase-1/">学习-hbase-1(安装与启动)</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/11/14/java-lock-1/">java开发中的锁（一）</a>
+          </li>
         
           <li>
             <a href="/lgb-blog/2017/10/27/lerning-netty-1/">netty学习之JBOSS Marshalling</a>
@@ -822,14 +817,6 @@
         
           <li>
             <a href="/lgb-blog/2017/10/17/merge-sort-by-fork-join/">fork-join来实现排序算法</a>
-          </li>
-        
-          <li>
-            <a href="/lgb-blog/2017/10/14/java-base-1/">java基础只类加载机制</a>
-          </li>
-        
-          <li>
-            <a href="/lgb-blog/2017/10/14/dubbo-testing-3/">dubbo学习（三）</a>
           </li>
         
       </ul>
@@ -845,7 +832,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 刘国兵<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>

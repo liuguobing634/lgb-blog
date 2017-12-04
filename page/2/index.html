@@ -56,9 +56,9 @@
       </nav>
       <nav id="sub-nav">
         
-          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="RSS Feed"></a>
+          <a id="nav-rss-link" class="nav-icon" href="/atom.xml" title="Flux RSS"></a>
         
-        <a id="nav-search-btn" class="nav-icon" title="Search"></a>
+        <a id="nav-search-btn" class="nav-icon" title="Rechercher"></a>
       </nav>
       <div id="search-form-wrap">
         <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form"><input type="search" name="q" class="search-form-input" placeholder="Search"><button type="submit" class="search-form-submit">&#xF002;</button><input type="hidden" name="sitesearch" value="http://liuguobing634.github.io/lgb-blog"></form>
@@ -68,6 +68,114 @@
 </header>
       <div class="outer">
         <section id="main">
+  
+    <article id="post-lerning-hessian-2" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lgb-blog/2017/10/02/lerning-hessian-2/" class="article-date">
+  <time datetime="2017-10-02T10:11:58.000Z" itemprop="datePublished">2017-10-02</time>
+</a>
+    
+  <div class="article-category">
+    <a class="article-category-link" href="/lgb-blog/categories/spring/">spring</a>
+  </div>
+
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/lgb-blog/2017/10/02/lerning-hessian-2/">Hessian学习（二）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="Hessian与spring的结合"><a href="#Hessian与spring的结合" class="headerlink" title="Hessian与spring的结合"></a>Hessian与spring的结合</h2><p>其实这篇文章主要讲spring的remoting，顺便使用了hessian而已。</p>
+<p>spring在很早的时候就提供了remoting功能，它在包spring-web下，它提供了五种实现，第一是Hessian，第二是Burlap，第三是http-invoke,第四是jax-ws，第五种是rmi，hessian现在不多说，burlap跟hessian是同一家公司的，现在spring将之注解为过时，http-invoke是spring自己提供的rpc，jax-ws是j2ee关于webservice的规范。</p>
+<p>这些remoting在spring中用起来大同小异，这里就医Hessian为例。</p>
+<p>先看服务端配置，spring-servlet.xml</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">name</span>=<span class="string">"/remoting/hessian"</span> <span class="attr">class</span>=<span class="string">"org.springframework.remoting.caucho.HessianServiceExporter"</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"serviceInterface"</span> <span class="attr">value</span>=<span class="string">"lew.bing.spring.service.UserService"</span>/&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"service"</span> <span class="attr">ref</span>=<span class="string">"userServiceImpl"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>服务端就这么简单，通过写这个bean就能把接口暴露出去，这里的name在前面加上spring mvc的dispatch配的url就是hessian的url。如果对于不是以spring mvc作为控制层的项目来说，也可以在根配置中配（如果使用annotation以及类配置的话，大家可以自行的去转换）。然后需要在web.xml中写上servlet及其mapping，其中servlet部分的类是org.springframework.web.context.support.HttpRequestHandlerServlet，名字是bean的名字，映射的url则是remoting的url。</p>
+<p>对于hessian，spring也提供可客户端方的使用，给个例子吧（spring文档中的例子，我本人并没有写相关的案例）</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div></pre></td><td class="code"><pre><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">class</span>=<span class="string">"example.SimpleObject"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"accountService"</span> <span class="attr">ref</span>=<span class="string">"accountService"</span>/&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;<span class="name">bean</span> <span class="attr">id</span>=<span class="string">"accountService"</span> <span class="attr">class</span>=<span class="string">"org.springframework.remoting.caucho.HessianProxyFactoryBean"</span>&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"serviceUrl"</span> <span class="attr">value</span>=<span class="string">"http://remotehost:8080/remoting/AccountService"</span>/&gt;</span></div><div class="line">    <span class="tag">&lt;<span class="name">property</span> <span class="attr">name</span>=<span class="string">"serviceInterface"</span> <span class="attr">value</span>=<span class="string">"example.AccountService"</span>/&gt;</span></div><div class="line"><span class="tag">&lt;/<span class="name">bean</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>用起来还是很简单的，换做其他的rpc，大致也是如此使用，当然因为其他的rpc不一定是基于http协议，有些配置还是需要改变的，不去细讲。</p>
+<p>我个人总结认为，hessian对比dubbo，还是太低级了，它仅仅提供rpc的功能，但是像服务注册与发现、集群与负载均衡等都没有，要自己手动去完成，dubbo也提供了hessian的协议，hessian的优势在于是跨语言的。接下来我将去学习spring cloud这一个比dubbo更完善的rpc框架。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/02/lerning-hessian-2/" data-id="cjarovycr000y859e5rtlco9f" class="article-share-link">Partager</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
+  
+    <article id="post-lerning-hessian-1" class="article article-type-post" itemscope itemprop="blogPost">
+  <div class="article-meta">
+    <a href="/lgb-blog/2017/10/02/lerning-hessian-1/" class="article-date">
+  <time datetime="2017-10-02T04:14:47.000Z" itemprop="datePublished">2017-10-02</time>
+</a>
+    
+  </div>
+  <div class="article-inner">
+    
+    
+      <header class="article-header">
+        
+  
+    <h1 itemprop="name">
+      <a class="article-title" href="/lgb-blog/2017/10/02/lerning-hessian-1/">Hessian学习（一）</a>
+    </h1>
+  
+
+      </header>
+    
+    <div class="article-entry" itemprop="articleBody">
+      
+        <h2 id="hessian的简单实用"><a href="#hessian的简单实用" class="headerlink" title="hessian的简单实用"></a>hessian的简单实用</h2><p>hessian是常用的rpc手段之一，它是基于Binary-RPC传输的一种webservice。</p>
+<p>hessian底层是以http传送，在java上就是通过一个Servlet了，就是HessianServlet。我们先来看源码，只看init部分：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div><div class="line">60</div><div class="line">61</div><div class="line">62</div><div class="line">63</div><div class="line">64</div><div class="line">65</div><div class="line">66</div><div class="line">67</div><div class="line">68</div><div class="line">69</div><div class="line">70</div><div class="line">71</div><div class="line">72</div><div class="line">73</div><div class="line">74</div><div class="line">75</div><div class="line">76</div><div class="line">77</div><div class="line">78</div><div class="line">79</div><div class="line">80</div><div class="line">81</div><div class="line">82</div><div class="line">83</div><div class="line">84</div><div class="line">85</div><div class="line">86</div><div class="line">87</div><div class="line">88</div><div class="line">89</div><div class="line">90</div><div class="line">91</div><div class="line">92</div><div class="line">93</div><div class="line">94</div><div class="line">95</div><div class="line">96</div><div class="line">97</div><div class="line">98</div><div class="line">99</div><div class="line">100</div><div class="line">101</div><div class="line">102</div><div class="line">103</div></pre></td><td class="code"><pre><div class="line"><span class="class"><span class="keyword">class</span> <span class="title">HessianServlet</span> </span>&#123;</div><div class="line">    </div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">(ServletConfig config)</span></span></div><div class="line"><span class="function">        <span class="keyword">throws</span> ServletException</span></div><div class="line"><span class="function">      </span>&#123;</div><div class="line">        <span class="keyword">super</span>.init(config);</div><div class="line">        </div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">          <span class="keyword">if</span> (_homeImpl != <span class="keyword">null</span>) &#123;</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"home-class"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"home-class"</span>);</div><div class="line">    </div><div class="line">            Class&lt;?&gt; homeClass = loadClass(className);</div><div class="line">    </div><div class="line">            _homeImpl = homeClass.newInstance();</div><div class="line">    </div><div class="line">            init(_homeImpl);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"service-class"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"service-class"</span>);</div><div class="line">    </div><div class="line">            Class&lt;?&gt; homeClass = loadClass(className);</div><div class="line">    </div><div class="line">            _homeImpl = homeClass.newInstance();</div><div class="line">    </div><div class="line">            init(_homeImpl);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> &#123;</div><div class="line">            <span class="keyword">if</span> (getClass().equals(HessianServlet.class))</div><div class="line">              <span class="keyword">throw</span> <span class="keyword">new</span> ServletException(<span class="string">"server must extend HessianServlet"</span>);</div><div class="line">    </div><div class="line">            _homeImpl = <span class="keyword">this</span>;</div><div class="line">          &#125;</div><div class="line">    </div><div class="line">          <span class="keyword">if</span> (_homeAPI != <span class="keyword">null</span>) &#123;</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"home-api"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"home-api"</span>);</div><div class="line">    </div><div class="line">            _homeAPI = loadClass(className);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"api-class"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"api-class"</span>);</div><div class="line">    </div><div class="line">            _homeAPI = loadClass(className);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (_homeImpl != <span class="keyword">null</span>) &#123;</div><div class="line">            _homeAPI = findRemoteAPI(_homeImpl.getClass());</div><div class="line">    </div><div class="line">            <span class="keyword">if</span> (_homeAPI == <span class="keyword">null</span>)</div><div class="line">              _homeAPI = _homeImpl.getClass();</div><div class="line">            </div><div class="line">            _homeAPI = _homeImpl.getClass();</div><div class="line">          &#125;</div><div class="line">          </div><div class="line">          <span class="keyword">if</span> (_objectImpl != <span class="keyword">null</span>) &#123;</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"object-class"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"object-class"</span>);</div><div class="line">    </div><div class="line">            Class&lt;?&gt; objectClass = loadClass(className);</div><div class="line">    </div><div class="line">            _objectImpl = objectClass.newInstance();</div><div class="line">    </div><div class="line">            init(_objectImpl);</div><div class="line">          &#125;</div><div class="line">    </div><div class="line">          <span class="keyword">if</span> (_objectAPI != <span class="keyword">null</span>) &#123;</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (getInitParameter(<span class="string">"object-api"</span>) != <span class="keyword">null</span>) &#123;</div><div class="line">            String className = getInitParameter(<span class="string">"object-api"</span>);</div><div class="line">    </div><div class="line">            _objectAPI = loadClass(className);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span> <span class="keyword">if</span> (_objectImpl != <span class="keyword">null</span>)</div><div class="line">            _objectAPI = _objectImpl.getClass();</div><div class="line">    </div><div class="line">          _homeSkeleton = <span class="keyword">new</span> HessianSkeleton(_homeImpl, _homeAPI);</div><div class="line">          </div><div class="line">          <span class="keyword">if</span> (_objectAPI != <span class="keyword">null</span>)</div><div class="line">            _homeSkeleton.setObjectClass(_objectAPI);</div><div class="line">    </div><div class="line">          <span class="keyword">if</span> (_objectImpl != <span class="keyword">null</span>) &#123;</div><div class="line">            _objectSkeleton = <span class="keyword">new</span> HessianSkeleton(_objectImpl, _objectAPI);</div><div class="line">            _objectSkeleton.setHomeClass(_homeAPI);</div><div class="line">          &#125;</div><div class="line">          <span class="keyword">else</span></div><div class="line">            _objectSkeleton = _homeSkeleton;</div><div class="line">    </div><div class="line">          <span class="keyword">if</span> (<span class="string">"true"</span>.equals(getInitParameter(<span class="string">"debug"</span>))) &#123;</div><div class="line">          &#125;</div><div class="line">    </div><div class="line">          <span class="keyword">if</span> (<span class="string">"false"</span>.equals(getInitParameter(<span class="string">"send-collection-type"</span>)))</div><div class="line">            setSendCollectionType(<span class="keyword">false</span>);</div><div class="line">        &#125; <span class="keyword">catch</span> (ServletException e) &#123;</div><div class="line">          <span class="keyword">throw</span> e;</div><div class="line">        &#125; <span class="keyword">catch</span> (Exception e) &#123;</div><div class="line">          <span class="keyword">throw</span> <span class="keyword">new</span> ServletException(e);</div><div class="line">        &#125;</div><div class="line">      &#125;</div><div class="line">    </div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>首先是判断home-class参数是否存在，存在的话就加载这个类并实例化，否则就判断service-class是否存在，逻辑跟前面一样，然后假如都不存在，那么就判断当前进入的servlet是不是此类本身，是的话就报错（因为必要的参数没有），否则就将本类当做接口的实现。</p>
+<p>这个信息告诉我们，使用hessian有两种方式，第一种是直接继承hessian，并实现rpc调用的接口，第二种就是直接使用hessian，但需要在参数中设置接口类和实现类（分别对应着home-class与home-api或者server-class与api-class）。</p>
+<p>我就根据这个信息写了两个server实现同样的功能。</p>
+<p>不过在写server之前，先看接口类，BasicService.class:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">interface</span> <span class="title">BasicService</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function">String <span class="title">sayHello</span><span class="params">()</span></span>;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>然后两个server，第一个是BasicServiceImpl.class，普通的pojo</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BasicServiceImpl</span> <span class="keyword">implements</span> <span class="title">BasicService</span></span>&#123;</div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">sayHello</span><span class="params">()</span> </span>&#123;</div><div class="line">        System.out.println(<span class="string">"hello"</span>);</div><div class="line">        <span class="keyword">return</span> <span class="string">"hello"</span>;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>另一个是AnotherBasicServiceImpl.class,继承自HessianServlet:</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"><span class="meta">@WebServlet</span>(urlPatterns = <span class="string">"/another"</span>)</div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">AnotherBasicServiceImpl</span> <span class="keyword">extends</span> <span class="title">HessianServlet</span> <span class="keyword">implements</span> <span class="title">BasicService</span> </span>&#123;</div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line">    <span class="meta">@Override</span></div><div class="line">    <span class="function"><span class="keyword">public</span> String <span class="title">sayHello</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">return</span> <span class="string">"mmb"</span>;</div><div class="line">    &#125;</div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>看一下我们的web.xml:</p>
+<figure class="highlight xml"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div></pre></td><td class="code"><pre><div class="line">&lt;?xml version="1.0" encoding="utf-8" ?&gt;</div><div class="line"><span class="tag">&lt;<span class="name">web-app</span> <span class="attr">xmlns</span>=<span class="string">"http://xmlns.jcp.org/xml/ns/javaee"</span></span></div><div class="line"><span class="tag">         <span class="attr">xmlns:xsl</span>=<span class="string">"http://www.w3.org/2001/XMLSchema-instance"</span></span></div><div class="line"><span class="tag">         <span class="attr">xsl:schemaLocation</span>=<span class="string">"http://xmlns.jcp.org/xml/ns/javaee</span></span></div><div class="line"><span class="tag"><span class="string">            http://xmlns.jcp.org/xml/ns/javaee/web-app_3_1.xsd"</span></span></div><div class="line"><span class="tag">         <span class="attr">version</span>=<span class="string">"3.1"</span></span></div><div class="line"><span class="tag">         <span class="attr">metadata-complete</span>=<span class="string">"false"</span>&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">servlet</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>Hessian<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">servlet-class</span>&gt;</span>com.caucho.hessian.server.HessianServlet<span class="tag">&lt;/<span class="name">servlet-class</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">init-param</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">param-name</span>&gt;</span>home-class<span class="tag">&lt;/<span class="name">param-name</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">param-value</span>&gt;</span>lew.bing.hessian.server.BasicServiceImpl<span class="tag">&lt;/<span class="name">param-value</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">init-param</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">init-param</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">param-name</span>&gt;</span>home-api<span class="tag">&lt;/<span class="name">param-name</span>&gt;</span></div><div class="line">            <span class="tag">&lt;<span class="name">param-value</span>&gt;</span>lew.bing.hessian.service.BasicService<span class="tag">&lt;/<span class="name">param-value</span>&gt;</span></div><div class="line">        <span class="tag">&lt;/<span class="name">init-param</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">servlet</span>&gt;</span></div><div class="line"></div><div class="line">    <span class="tag">&lt;<span class="name">servlet-mapping</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">servlet-name</span>&gt;</span>Hessian<span class="tag">&lt;/<span class="name">servlet-name</span>&gt;</span></div><div class="line">        <span class="tag">&lt;<span class="name">url-pattern</span>&gt;</span>/hessian<span class="tag">&lt;/<span class="name">url-pattern</span>&gt;</span></div><div class="line">    <span class="tag">&lt;/<span class="name">servlet-mapping</span>&gt;</span></div><div class="line"></div><div class="line"><span class="tag">&lt;/<span class="name">web-app</span>&gt;</span></div></pre></td></tr></table></figure>
+<p>因为我开启了servlet3.1的注解功能，所以这里只配置一个Servlet，另一个看上面的AnotherBasicServiceImpl的@WebServlet部分。</p>
+<p>我再把client写上，client部分就很简单了：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div></pre></td><td class="code"><pre><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BasicServiceClient</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> MalformedURLException </span>&#123;</div><div class="line">        HessianProxyFactory factory = <span class="keyword">new</span> HessianProxyFactory();</div><div class="line">        BasicService o = (BasicService)factory.create(BasicService.class, <span class="string">"http://localhost:8484/hessian"</span>);</div><div class="line">        System.out.println(o.sayHello());</div><div class="line">        o = (BasicService) factory.create(BasicService.class,<span class="string">"http://localhost:8484/another"</span>);</div><div class="line">        System.out.println(o.sayHello());</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
+<p>测试成功，简单的使用就这样完成了。我个人比较推荐使用第二种继承HessianServlet的方式，因为这样如果是servlet3.0以上的话，就不用一直在xml文件写映射了。</p>
+
+      
+    </div>
+    <footer class="article-footer">
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/02/lerning-hessian-1/" data-id="cjarovyct0010859ee57gazrv" class="article-share-link">Partager</a>
+      
+      
+  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li></ul>
+
+    </footer>
+  </div>
+  
+</article>
+
+
   
     <article id="post-what-is-cluster" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
@@ -100,7 +208,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/01/what-is-cluster/" data-id="cj9a16t10001aoa9eryvl6t3n" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/10/01/what-is-cluster/" data-id="cjarovydt001p859e2y1p6os6" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li></ul>
@@ -174,7 +282,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/29/lerning-spring-4/" data-id="cj9a16t0s0014oa9em9q5fz2m" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/29/lerning-spring-4/" data-id="cjarovyd80018859ei3wi3dlf" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li></ul>
@@ -267,7 +375,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-3/" data-id="cj9a16t0f000uoa9ezqxaegnq" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-3/" data-id="cjarovycv0012859eaa4kpsa1" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
@@ -344,7 +452,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-2/" data-id="cj9a16t0c000roa9eph4m7wtm" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/28/lerning-spring-2/" data-id="cjarovycx0015859eodfsbpso" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
@@ -419,7 +527,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/27/lerning-spring-1/" data-id="cj9a16t09000noa9efjb4grn3" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/27/lerning-spring-1/" data-id="cjarovydm001h859eiaoy50l6" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li></ul>
@@ -514,7 +622,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/26/dubbo-testing-1/" data-id="cj9a16syu0001oa9e9vpumqzr" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/26/dubbo-testing-1/" data-id="cjarovyaq0001859e6rvmw4f5" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li></ul>
@@ -580,7 +688,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/25/zookeeper-testing-2/" data-id="cj9a16t18001foa9epfn6efos" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/25/zookeeper-testing-2/" data-id="cjarovydq001n859e5kmxlla0" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li></ul>
@@ -639,7 +747,7 @@
       
     </div>
     <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/24/zookeeper-testing-1/" data-id="cj9a16t13001doa9evl19kjgu" class="article-share-link">Share</a>
+      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/24/zookeeper-testing-1/" data-id="cjarovydv001t859ehvy3iz5w" class="article-share-link">Partager</a>
       
       
   <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li></ul>
@@ -651,139 +759,10 @@
 
 
   
-    <article id="post-how-to-use-activeMq-3" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/lgb-blog/2017/09/22/how-to-use-activeMq-3/" class="article-date">
-  <time datetime="2017-09-22T06:56:00.000Z" itemprop="datePublished">2017-09-22</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/lgb-blog/categories/activeMq/">activeMq</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/lgb-blog/2017/09/22/how-to-use-activeMq-3/">使用activeMq(三)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <h2 id="JMS消息持久化与事务机制"><a href="#JMS消息持久化与事务机制" class="headerlink" title="JMS消息持久化与事务机制"></a>JMS消息持久化与事务机制</h2><p>本文有两部分，一部分讲述jms的消息持久化，另一部分讲解事务机制。</p>
-<h3 id="1-JMS持久化"><a href="#1-JMS持久化" class="headerlink" title="1.JMS持久化"></a>1.JMS持久化</h3><p>JMS持久化其实有两类，一类是传输持久化，一类是订阅持久化，其实不难理解，前者是应对服务器broker的，后者是应对消息订阅者的。</p>
-<p>首先来看传输持久化与非持久化。</p>
-<h4 id="1-1-JMS传输的持久化与非持久化"><a href="#1-1-JMS传输的持久化与非持久化" class="headerlink" title="1.1 JMS传输的持久化与非持久化"></a>1.1 JMS传输的持久化与非持久化</h4><p>消息传输非持久化是指发送消息时直接将消息发送到订阅者那里，而不需要保存下来，持久化则先保存下来然后再发送到订阅者。当broker宕机重启时，会将持久化未发送的消息重新发送到订阅者那，而未持久化的消息则无法传送了。</p>
-<p>在producer中设置DeliverMode时配置此选项，默认是持久化传输的(activemq测试是如此，其余的消息队列不清楚)。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div></pre></td><td class="code"><pre><div class="line">producer = session.createProducer(destination);</div><div class="line">producer.setDeliveryMode(DeliveryMode.PERSISTENT); // 持久化</div><div class="line">// producer.setDeliveryMode(DeliveryMode.NON_PERSISTENT); // 非持久化</div></pre></td></tr></table></figure>
-<p>大家可以测试一下，在activemq重启后，持久化的会继续收到，而非持久化的则无法收到</p>
-<h4 id="1-2-JMS订阅的持久化与非持久化"><a href="#1-2-JMS订阅的持久化与非持久化" class="headerlink" title="1.2 JMS订阅的持久化与非持久化"></a>1.2 JMS订阅的持久化与非持久化</h4><p>首先，这个只针对pub/sub方式，p2p与此无关，因为p2p是消费了就删除，没消费就留着，所以本身不需要持久化订阅。</p>
-<p>pub/sub模式因为一个主题可以被多个订阅者订阅，某些订阅者也可能因为中途宕机而错过消息，而消息队列不可能因为其中一两个订阅者的消失后重现而重新发送消息给所有订阅者，所以针对此情况，就需要把这些订阅者的相关信息保存起来。</p>
-<p>这个操作因为与生产者无关，所以只在消费者那里有变化.</p>
-<p>首先消息队列要识别订阅者和订阅的消息，所以有两处改变，首先是要给订阅者的connection设置一个clientId。</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">connection.setClientID(&quot;consumers-&quot;+Thread.currentThread().getName());</div></pre></td></tr></table></figure>
-<p>注意这里的id只能唯一，第二个同样的id加进来则报错。</p>
-<p>其次持久化订阅的consumer也要与非持久化区分</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div></pre></td><td class="code"><pre><div class="line">consumer = session.createDurableSubscriber((Topic) destination, &quot;aaa&quot;); // 持久化订阅</div><div class="line">// consumer = session.createConsumer(destination); //非持久化订阅</div></pre></td></tr></table></figure>
-<p>当使用持久化订阅时，如果生产者持续生成消息，而订阅者中途离开又回来，那么中间错过的消息可以补偿得到。</p>
-<p>我写了给代码做了测试.</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConsumerTest</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> <span class="keyword">throws</span> InterruptedException </span>&#123;</div><div class="line"></div><div class="line">        Consumer consumer1 = <span class="keyword">new</span> Consumer();</div><div class="line">        Consumer consumer2 = <span class="keyword">new</span> Consumer();</div><div class="line">        Consumer consumer3 = <span class="keyword">new</span> Consumer();</div><div class="line"></div><div class="line">        Thread thread = <span class="keyword">new</span> Thread(<span class="keyword">new</span> ConsumerRun(consumer1),<span class="string">"thread1"</span>);</div><div class="line">        thread.start();</div><div class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> ConsumerRun(consumer2)).start();</div><div class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> ConsumerRun(consumer3)).start();</div><div class="line"></div><div class="line">        Thread.sleep(<span class="number">30000</span>);</div><div class="line">        System.out.println(<span class="string">"客户端1关闭"</span>);</div><div class="line">        consumer1.close(); <span class="comment">// 会出现bug</span></div><div class="line">        thread.interrupt();</div><div class="line">        Thread.sleep(<span class="number">1000</span>);</div><div class="line">        System.out.println(<span class="string">"客户端1重启"</span>);</div><div class="line">        <span class="keyword">new</span> Thread(<span class="keyword">new</span> ConsumerRun(consumer1),<span class="string">"thread1"</span>).start();</div><div class="line"></div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="class"><span class="keyword">class</span> <span class="title">ConsumerRun</span> <span class="keyword">implements</span> <span class="title">Runnable</span> </span>&#123;</div><div class="line"></div><div class="line">        <span class="keyword">private</span> Consumer consumer;</div><div class="line"></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="title">ConsumerRun</span><span class="params">(Consumer consumer)</span> </span>&#123;</div><div class="line">            <span class="keyword">this</span>.consumer = consumer;</div><div class="line">        &#125;</div><div class="line"></div><div class="line">        <span class="meta">@Override</span></div><div class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</div><div class="line">            consumer.init();</div><div class="line">            consumer.getMessage(<span class="string">"test"</span>);</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>由于我不知道这里如何放置图片，测试的效果就不给大家了。总结一下，就是大概30秒后客户端1退出，然后1秒后，客户端1又启动，会发现它与别的客户端之间的数字相差1.</p>
-<p>JMS的持久化介绍就到这里结束，下面介绍JMS的事务。</p>
-<h3 id="2-JMS的事务机制"><a href="#2-JMS的事务机制" class="headerlink" title="2.JMS的事务机制"></a>2.JMS的事务机制</h3><p>大家对数据库的事务应该都很了解，jms的事务与之类似，有了事务机制能够保证jms的可靠性。当然持久化也是为了保证jms的可靠性。</p>
-<p>持久化消息可以让宕机重启情况保证消息依然能够收到，而事务则是在业务逻辑出现bug时消息能够回滚，从而时之后bug修复后能够收到该消息。</p>
-<p>这里写一下：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div></pre></td><td class="code"><pre><div class="line"></div><div class="line">while (true) &#123;</div><div class="line">                Thread.sleep(1000);</div><div class="line">                try &#123;</div><div class="line">                    TextMessage message = (TextMessage) consumer.receive();</div><div class="line">                    if (message != null) &#123;</div><div class="line">                        message.acknowledge();</div><div class="line">                        System.out.println(Thread.currentThread().getName()+&quot;: Consumer:我是消费者，我正在消费Msg&quot;+message.getText()+&quot;---&gt;&quot;+count.getAndIncrement());</div><div class="line">                    &#125;</div><div class="line">                    if (count.get() == a) &#123;</div><div class="line">                        throw new RuntimeException(Thread.currentThread().getName() + &quot;:有错误啦&quot;);</div><div class="line">                    &#125;</div><div class="line">                    session.commit();</div><div class="line">                &#125; catch (RuntimeException e) &#123;</div><div class="line">                    e.printStackTrace();</div><div class="line">                    session.rollback();</div><div class="line">                &#125;</div><div class="line"></div><div class="line">            &#125;</div></pre></td></tr></table></figure>
-<p>这是将第一讲中的消费者while(true)部分修改的，经过测试后，当某个线程出现错误，然后下一轮循环它的count是比别的要少的，这是因为事务回滚它重新消费。</p>
-<p>我在谈一下这里的session，有心人应该注意到我的第一讲中session并没有commit，这是错误的，如果不commit，代表它并没有被消费.</p>
-<p>在client的session创建时方法connection.createSession()，有两个参数，后一个参数指定session的模式，分别是：<br>Session.AUTO_ACKNOWLEDGE为自动确认，客户端发送和接收消息不需要做额外的工作。<br>Session.CLIENT_ACKNOWLEDGE为客户端确认。客户端接收到消息后，必须调用javax.jms.Message的acknowledge方法。jms服务器才会删除消息。<br>DUPS_OK_ACKNOWLEDGE允许副本的确认模式。一旦接收方应用程序的方法调用从处理消息处返回，会话对象就会确认消息的接收；而且允许重复确认。在需要考虑资源使用时，这种模式非常有效。</p>
-<p>但在第一个参数为true时以上都可以被忽略。session模式被指定为SESSION_TRANSACTED。</p>
-<h3 id="3-总结"><a href="#3-总结" class="headerlink" title="3.总结"></a>3.总结</h3><p>JMS的持久化和事务机制基本上能够保证JMS的可靠性。持久化解决了宕机的情况，而事务则是出现bug的时候或者某些特殊情况。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/22/how-to-use-activeMq-3/" data-id="cj9a16t01000ioa9ev5dl7p8w" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
-    <article id="post-how-to-use-activeMq-1" class="article article-type-post" itemscope itemprop="blogPost">
-  <div class="article-meta">
-    <a href="/lgb-blog/2017/09/21/how-to-use-activeMq-1/" class="article-date">
-  <time datetime="2017-09-21T11:54:07.000Z" itemprop="datePublished">2017-09-21</time>
-</a>
-    
-  <div class="article-category">
-    <a class="article-category-link" href="/lgb-blog/categories/activeMq/">activeMq</a>
-  </div>
-
-  </div>
-  <div class="article-inner">
-    
-    
-      <header class="article-header">
-        
-  
-    <h1 itemprop="name">
-      <a class="article-title" href="/lgb-blog/2017/09/21/how-to-use-activeMq-1/">使用activeMq(一)</a>
-    </h1>
-  
-
-      </header>
-    
-    <div class="article-entry" itemprop="articleBody">
-      
-        <p>现在越来越多的项目需要分模块开发，然后模块之间的调用就需要消息中间件，作为老牌的，也是最全面的消息中间件，activeMq是我下一个要攻克的产品，所以得空抽点时间去学习他。</p>
-<h3 id="一、安装activeMq"><a href="#一、安装activeMq" class="headerlink" title="一、安装activeMq"></a>一、安装activeMq</h3><p>官网上下载，由于我用的macbook， 所以安装的是tar包，解压后，进入bin目录，然后输入以下命令：</p>
-<figure class="highlight bash"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">$ ./activemq start</div></pre></td></tr></table></figure>
-<p>后台启动activemq，这就安装好了</p>
-<h3 id="二、使用activemq"><a href="#二、使用activemq" class="headerlink" title="二、使用activemq"></a>二、使用activemq</h3><p>activemq是服从AMQP协议的，这也让它能够使用多种语言开发，因为我本人是java developer,所以我采用的是java。</p>
-<p>然后activemq支持两类消息，一种是点对点(p2p)，一种是发布订阅模式(pub/sub)，实际上activemq也服从jms协议，所以这个其实是jms的内容。</p>
-<p>以下是采用p2p的代码</p>
-<h4 id="生产者"><a href="#生产者" class="headerlink" title="生产者"></a>生产者</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Producer</span> </span>&#123;</div><div class="line"> </div><div class="line">     <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String USERNAME = ActiveMQConnection.DEFAULT_USER;</div><div class="line"> </div><div class="line">     <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String PASSWORD = ActiveMQConnection.DEFAULT_PASSWORD;</div><div class="line"> </div><div class="line">     <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String BROKEN_URL = ActiveMQConnection.DEFAULT_BROKER_URL;</div><div class="line"> </div><div class="line">     AtomicInteger count = <span class="keyword">new</span> AtomicInteger(<span class="number">0</span>);</div><div class="line"> </div><div class="line">     <span class="comment">//链接工厂</span></div><div class="line">     ConnectionFactory connectionFactory;</div><div class="line">     <span class="comment">//链接对象</span></div><div class="line">     Connection connection;</div><div class="line">     <span class="comment">//事务管理</span></div><div class="line">     Session session;</div><div class="line">     ThreadLocal&lt;MessageProducer&gt; threadLocal = <span class="keyword">new</span> ThreadLocal&lt;&gt;();</div><div class="line"> </div><div class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</div><div class="line">         <span class="keyword">try</span> &#123;</div><div class="line">             connectionFactory = <span class="keyword">new</span> ActiveMQConnectionFactory(USERNAME, PASSWORD, BROKEN_URL);</div><div class="line">             connection = connectionFactory.createConnection();</div><div class="line">             connection.start();</div><div class="line">             session = connection.createSession(<span class="keyword">true</span>, Session.SESSION_TRANSACTED);</div><div class="line">         &#125; <span class="keyword">catch</span> (JMSException e) &#123;</div><div class="line">             e.printStackTrace();</div><div class="line">         &#125;</div><div class="line">     &#125;</div><div class="line"> </div><div class="line">     <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sendMessage</span><span class="params">(String disname)</span> </span>&#123;</div><div class="line">         <span class="keyword">try</span> &#123;</div><div class="line"> <span class="comment">//            Queue queue = session.createQueue(disname);</span></div><div class="line">             Destination destination = session.createQueue(disname); <span class="comment">// 1</span></div><div class="line">             MessageProducer producer = <span class="keyword">null</span>;</div><div class="line">             <span class="keyword">if</span> (threadLocal.get() != <span class="keyword">null</span>) &#123;</div><div class="line">                 producer = threadLocal.get();</div><div class="line">             &#125; <span class="keyword">else</span> &#123;</div><div class="line">                 producer = session.createProducer(destination);</div><div class="line">                 threadLocal.set(producer);</div><div class="line">             &#125;</div><div class="line">             <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</div><div class="line">                 Thread.sleep(<span class="number">1000</span>);</div><div class="line">                 <span class="keyword">int</span> num = count.getAndIncrement();</div><div class="line">                 <span class="comment">// 发送TextMessage</span></div><div class="line">                 String msg = Thread.currentThread().getName()+</div><div class="line">                         <span class="string">"producer:我是大帅哥，我现在正在生产东西！,count:"</span>+num;</div><div class="line">                 TextMessage message = session.createTextMessage(msg);</div><div class="line">                 System.out.println(msg);</div><div class="line">                 producer.send(message);</div><div class="line">                 <span class="comment">// 提交session</span></div><div class="line">                 session.commit();</div><div class="line">             &#125;</div><div class="line">         &#125; <span class="keyword">catch</span> (JMSException | InterruptedException e) &#123;</div><div class="line">             e.printStackTrace();</div><div class="line">         &#125;</div><div class="line">     &#125;</div><div class="line"> </div><div class="line"> &#125;</div></pre></td></tr></table></figure>
-<p>生产者完成，除了用到了new ActiveMQConnectorFactory，其余的都是jms的标准写法，其实消费者也是如此。</p>
-<h4 id="消费者"><a href="#消费者" class="headerlink" title="消费者"></a>消费者</h4><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div><div class="line">11</div><div class="line">12</div><div class="line">13</div><div class="line">14</div><div class="line">15</div><div class="line">16</div><div class="line">17</div><div class="line">18</div><div class="line">19</div><div class="line">20</div><div class="line">21</div><div class="line">22</div><div class="line">23</div><div class="line">24</div><div class="line">25</div><div class="line">26</div><div class="line">27</div><div class="line">28</div><div class="line">29</div><div class="line">30</div><div class="line">31</div><div class="line">32</div><div class="line">33</div><div class="line">34</div><div class="line">35</div><div class="line">36</div><div class="line">37</div><div class="line">38</div><div class="line">39</div><div class="line">40</div><div class="line">41</div><div class="line">42</div><div class="line">43</div><div class="line">44</div><div class="line">45</div><div class="line">46</div><div class="line">47</div><div class="line">48</div><div class="line">49</div><div class="line">50</div><div class="line">51</div><div class="line">52</div><div class="line">53</div><div class="line">54</div><div class="line">55</div><div class="line">56</div><div class="line">57</div><div class="line">58</div><div class="line">59</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Consumer</span> </span>&#123;</div><div class="line"></div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String USERNAME = ActiveMQConnection.DEFAULT_USER;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String PASSWORD = ActiveMQConnection.DEFAULT_PASSWORD;</div><div class="line"></div><div class="line">    <span class="keyword">private</span> <span class="keyword">static</span> <span class="keyword">final</span> String BROKEN_URL = ActiveMQConnection.DEFAULT_BROKER_URL;</div><div class="line"></div><div class="line">    AtomicInteger count = <span class="keyword">new</span> AtomicInteger();</div><div class="line"></div><div class="line">    <span class="comment">//链接工厂</span></div><div class="line">    ConnectionFactory connectionFactory;</div><div class="line">    <span class="comment">//链接对象</span></div><div class="line">    Connection connection;</div><div class="line">    <span class="comment">//事务管理</span></div><div class="line">    Session session;</div><div class="line"></div><div class="line">    ThreadLocal&lt;MessageConsumer&gt; threadLocal = <span class="keyword">new</span> ThreadLocal&lt;&gt;();</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">init</span><span class="params">()</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="comment">// 这是点对点还是sub/pub</span></div><div class="line">            connectionFactory = <span class="keyword">new</span> ActiveMQConnectionFactory(USERNAME, PASSWORD, BROKEN_URL);</div><div class="line">            connection = connectionFactory.createConnection();</div><div class="line">            connection.start();</div><div class="line">            session = connection.createSession(<span class="keyword">true</span>, Session.AUTO_ACKNOWLEDGE);</div><div class="line">        &#125; <span class="keyword">catch</span> (JMSException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">getMessage</span><span class="params">(String disname)</span> </span>&#123;</div><div class="line">        <span class="keyword">try</span> &#123;</div><div class="line">            <span class="comment">// 如果是创建queue，则是点对点，而如果是创建topic，则是sub/pub</span></div><div class="line"><span class="comment">//            Queue queue = session.createQueue(disname);</span></div><div class="line">            Destination destination = session.createQueue(disname); <span class="comment">// 2</span></div><div class="line">            MessageConsumer consumer = <span class="keyword">null</span>;</div><div class="line">            <span class="keyword">if</span> (threadLocal.get() != <span class="keyword">null</span>) &#123;</div><div class="line">                consumer = threadLocal.get();</div><div class="line">            &#125; <span class="keyword">else</span> &#123;</div><div class="line">                consumer = session.createConsumer(destination);</div><div class="line">                threadLocal.set(consumer);</div><div class="line">            &#125;</div><div class="line">            <span class="keyword">while</span> (<span class="keyword">true</span>) &#123;</div><div class="line">                Thread.sleep(<span class="number">1000</span>);</div><div class="line">                TextMessage message = (TextMessage) consumer.receive();</div><div class="line">                <span class="keyword">if</span> (message != <span class="keyword">null</span>) &#123;</div><div class="line">                    message.acknowledge();</div><div class="line">                    System.out.println(Thread.currentThread().getName()+<span class="string">": Consumer:我是消费者，我正在消费Msg"</span>+message.getText()+<span class="string">"---&gt;"</span>+count.getAndIncrement());</div><div class="line">                &#125;</div><div class="line">            &#125;</div><div class="line">        &#125; <span class="keyword">catch</span> (JMSException | InterruptedException e) &#123;</div><div class="line">            e.printStackTrace();</div><div class="line">        &#125;</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h4 id="测试用例"><a href="#测试用例" class="headerlink" title="测试用例"></a>测试用例</h4><h5 id="生产者-1"><a href="#生产者-1" class="headerlink" title="生产者"></a>生产者</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ProducerTest</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        Producer producer = <span class="keyword">new</span> Producer();</div><div class="line">        producer.init();</div><div class="line">        producer.sendMessage(<span class="string">"test"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<h5 id="消费者-1"><a href="#消费者-1" class="headerlink" title="消费者"></a>消费者</h5><figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div><div class="line">2</div><div class="line">3</div><div class="line">4</div><div class="line">5</div><div class="line">6</div><div class="line">7</div><div class="line">8</div><div class="line">9</div><div class="line">10</div></pre></td><td class="code"><pre><div class="line"></div><div class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ConsumerTest</span> </span>&#123;</div><div class="line"></div><div class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</div><div class="line">        Consumer consumer = <span class="keyword">new</span> Consumer();</div><div class="line">        consumer.init();</div><div class="line">        consumer.getMessage(<span class="string">"test"</span>);</div><div class="line">    &#125;</div><div class="line"></div><div class="line">&#125;</div></pre></td></tr></table></figure>
-<p>所有代码就完成了。<br>activeMq有一个监听的页面，打开 (<a href="http://localhost:8161" target="_blank" rel="external">http://localhost:8161</a>) 可以看到，用户名密码都是admin，点击queue大家可以看到上面有个表格。</p>
-<h4 id="发布订阅模式"><a href="#发布订阅模式" class="headerlink" title="发布订阅模式"></a>发布订阅模式</h4><p>实际上把上面的1跟2换成如下代码就可以变成发布订阅模式了:</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><div class="line">1</div></pre></td><td class="code"><pre><div class="line">Destination destination = session.createTopic(disname);</div></pre></td></tr></table></figure>
-<h3 id="三、总结"><a href="#三、总结" class="headerlink" title="三、总结"></a>三、总结</h3><p>activemq的简单使用还是很简单的，在项目应用中也很容易找到它们的作用点，这里我就不再详述。</p>
-
-      
-    </div>
-    <footer class="article-footer">
-      <a data-url="http://liuguobing634.github.io/lgb-blog/2017/09/21/how-to-use-activeMq-1/" data-id="cj9a16szt000boa9e7k62pvxl" class="article-share-link">Share</a>
-      
-      
-  <ul class="article-tag-list"><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="article-tag-list-item"><a class="article-tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li></ul>
-
-    </footer>
-  </div>
-  
-</article>
-
-
-  
 
 
   <nav id="page-nav">
-    <a class="extend prev" rel="prev" href="/lgb-blog/">&laquo; __('prev')</a><a class="page-number" href="/lgb-blog/">1</a><span class="page-number current">2</span>
+    <a class="extend prev" rel="prev" href="/lgb-blog/">&laquo; __('prev')</a><a class="page-number" href="/lgb-blog/">1</a><span class="page-number current">2</span><a class="page-number" href="/lgb-blog/page/3/">3</a><a class="extend next" rel="next" href="/lgb-blog/page/3/">__('next') &raquo;</a>
   </nav>
 </section>
         
@@ -791,7 +770,7 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Categories</h3>
+    <h3 class="widget-title">Catégories</h3>
     <div class="widget">
       <ul class="category-list"><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/activeMq/">activeMq</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/dubbo/">dubbo</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/java/">java</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/netty/">netty</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/spring/">spring</a></li><li class="category-list-item"><a class="category-list-link" href="/lgb-blog/categories/zookeeper/">zookeeper</a></li></ul>
     </div>
@@ -801,9 +780,9 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tags</h3>
+    <h3 class="widget-title">Mot-clés</h3>
     <div class="widget">
-      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/ForkJoin/">ForkJoin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/Nio/">Nio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jboss-marshalling/">jboss marshalling</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jvm/">jvm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/netty/">netty</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-cloud/">spring cloud</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/并发/">并发</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/设计模式/">设计模式</a></li></ul>
+      <ul class="tag-list"><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/ForkJoin/">ForkJoin</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/Nio/">Nio</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/activeMq/">activeMq</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/cluster/">cluster</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/curator/">curator</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/dubbo/">dubbo</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hadoop/">hadoop</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hbase/">hbase</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/hessian/">hessian</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/java/">java</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jboss-marshalling/">jboss marshalling</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jms/">jms</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/jvm/">jvm</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/lock/">lock</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/mybatis/">mybatis</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/netty/">netty</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/rpc/">rpc</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring/">spring</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-cloud/">spring cloud</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/spring-boot/">spring-boot</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/synchronized/">synchronized</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/zookeeper/">zookeeper</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/多线程/">多线程</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/并发/">并发</a></li><li class="tag-list-item"><a class="tag-list-link" href="/lgb-blog/tags/设计模式/">设计模式</a></li></ul>
     </div>
   </div>
 
@@ -811,9 +790,9 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Tag Cloud</h3>
+    <h3 class="widget-title">Nuage de mot-clés</h3>
     <div class="widget tagcloud">
-      <a href="/lgb-blog/tags/ForkJoin/" style="font-size: 10px;">ForkJoin</a> <a href="/lgb-blog/tags/Nio/" style="font-size: 10px;">Nio</a> <a href="/lgb-blog/tags/activeMq/" style="font-size: 13.33px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 16.67px;">dubbo</a> <a href="/lgb-blog/tags/hessian/" style="font-size: 13.33px;">hessian</a> <a href="/lgb-blog/tags/java/" style="font-size: 10px;">java</a> <a href="/lgb-blog/tags/jboss-marshalling/" style="font-size: 10px;">jboss marshalling</a> <a href="/lgb-blog/tags/jms/" style="font-size: 13.33px;">jms</a> <a href="/lgb-blog/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/netty/" style="font-size: 10px;">netty</a> <a href="/lgb-blog/tags/rpc/" style="font-size: 10px;">rpc</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-cloud/" style="font-size: 10px;">spring cloud</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a> <a href="/lgb-blog/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/lgb-blog/tags/并发/" style="font-size: 10px;">并发</a> <a href="/lgb-blog/tags/设计模式/" style="font-size: 10px;">设计模式</a>
+      <a href="/lgb-blog/tags/ForkJoin/" style="font-size: 10px;">ForkJoin</a> <a href="/lgb-blog/tags/Nio/" style="font-size: 10px;">Nio</a> <a href="/lgb-blog/tags/activeMq/" style="font-size: 13.33px;">activeMq</a> <a href="/lgb-blog/tags/cluster/" style="font-size: 10px;">cluster</a> <a href="/lgb-blog/tags/curator/" style="font-size: 10px;">curator</a> <a href="/lgb-blog/tags/dubbo/" style="font-size: 16.67px;">dubbo</a> <a href="/lgb-blog/tags/hadoop/" style="font-size: 10px;">hadoop</a> <a href="/lgb-blog/tags/hbase/" style="font-size: 10px;">hbase</a> <a href="/lgb-blog/tags/hessian/" style="font-size: 13.33px;">hessian</a> <a href="/lgb-blog/tags/java/" style="font-size: 10px;">java</a> <a href="/lgb-blog/tags/jboss-marshalling/" style="font-size: 10px;">jboss marshalling</a> <a href="/lgb-blog/tags/jms/" style="font-size: 13.33px;">jms</a> <a href="/lgb-blog/tags/jvm/" style="font-size: 10px;">jvm</a> <a href="/lgb-blog/tags/lock/" style="font-size: 10px;">lock</a> <a href="/lgb-blog/tags/mybatis/" style="font-size: 10px;">mybatis</a> <a href="/lgb-blog/tags/netty/" style="font-size: 10px;">netty</a> <a href="/lgb-blog/tags/rpc/" style="font-size: 10px;">rpc</a> <a href="/lgb-blog/tags/spring/" style="font-size: 20px;">spring</a> <a href="/lgb-blog/tags/spring-cloud/" style="font-size: 10px;">spring cloud</a> <a href="/lgb-blog/tags/spring-boot/" style="font-size: 10px;">spring-boot</a> <a href="/lgb-blog/tags/synchronized/" style="font-size: 10px;">synchronized</a> <a href="/lgb-blog/tags/zookeeper/" style="font-size: 13.33px;">zookeeper</a> <a href="/lgb-blog/tags/多线程/" style="font-size: 10px;">多线程</a> <a href="/lgb-blog/tags/并发/" style="font-size: 10px;">并发</a> <a href="/lgb-blog/tags/设计模式/" style="font-size: 10px;">设计模式</a>
     </div>
   </div>
 
@@ -822,7 +801,7 @@
   <div class="widget-wrap">
     <h3 class="widget-title">Archives</h3>
     <div class="widget">
-      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/09/">September 2017</a></li></ul>
+      <ul class="archive-list"><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/12/">December 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/11/">November 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/10/">October 2017</a></li><li class="archive-list-item"><a class="archive-list-link" href="/lgb-blog/archives/2017/09/">September 2017</a></li></ul>
     </div>
   </div>
 
@@ -830,9 +809,17 @@
   
     
   <div class="widget-wrap">
-    <h3 class="widget-title">Recent Posts</h3>
+    <h3 class="widget-title">Articles récents</h3>
     <div class="widget">
       <ul>
+        
+          <li>
+            <a href="/lgb-blog/2017/12/04/lerning-hbase-1/">学习-hbase-1(安装与启动)</a>
+          </li>
+        
+          <li>
+            <a href="/lgb-blog/2017/11/14/java-lock-1/">java开发中的锁（一）</a>
+          </li>
         
           <li>
             <a href="/lgb-blog/2017/10/27/lerning-netty-1/">netty学习之JBOSS Marshalling</a>
@@ -844,14 +831,6 @@
         
           <li>
             <a href="/lgb-blog/2017/10/17/merge-sort-by-fork-join/">fork-join来实现排序算法</a>
-          </li>
-        
-          <li>
-            <a href="/lgb-blog/2017/10/14/java-base-1/">java基础只类加载机制</a>
-          </li>
-        
-          <li>
-            <a href="/lgb-blog/2017/10/14/dubbo-testing-3/">dubbo学习（三）</a>
           </li>
         
       </ul>
@@ -867,7 +846,7 @@
   <div class="outer">
     <div id="footer-info" class="inner">
       &copy; 2017 刘国兵<br>
-      Powered by <a href="http://hexo.io/" target="_blank">Hexo</a>
+      Propulsé by <a href="http://hexo.io/" target="_blank">Hexo</a>
     </div>
   </div>
 </footer>
